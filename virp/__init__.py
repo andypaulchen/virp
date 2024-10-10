@@ -5,6 +5,8 @@
 Virp (VIRtual cell generation by Permutation) is a code for generating a virtual cell from a site-disordered .cif crystal file
 """
 
+from .main import *
+
 __copyright__  = "Kedar Hippalgaonkar's Materials by Design Lab"
 __version__    =  "0.1"
 __maintainer__ = "Andy Paul Chen"
