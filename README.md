@@ -5,7 +5,7 @@
  (To be updated!)
 
  ## Requirements
- The only package required is Pymatgen (`pymatgen==2024.10.3`)
+ The only package required is Pymatgen (`pymatgen==2024.10.3`)<br>
  __Optional__: You can also use git for the fancy installation. Otherwise, downloading the .py file will do.
 
  ## Installation
