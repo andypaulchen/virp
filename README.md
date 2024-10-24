@@ -9,5 +9,5 @@
  __Optional__: You can also use git for the fancy installation. Otherwise, downloading the .py file will do.
 
  ## Installation
- `pip install git+https://github.com/andypaulchen/Virp.git`
+ `pip install git+https://github.com/andypaulchen/virp.git`
  
