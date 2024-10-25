@@ -9,5 +9,8 @@
  __Optional__: You can also use git for the fancy installation. Otherwise, downloading the .py file will do.
 
  ## Installation
- `pip install git+https://github.com/andypaulchen/Virp.git`
+ `pip install git+https://github.com/andypaulchen/virp.git`
+
+ ## Lore
+<video src="vrman.mp4" width="320" height="240" controls></video>
  
