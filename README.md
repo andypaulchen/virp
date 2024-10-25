@@ -10,7 +10,4 @@
 
  ## Installation
  `pip install git+https://github.com/andypaulchen/virp.git`
-
- ## Lore
-<video src="vrman.mp4" width="320" height="240" controls></video>
  
