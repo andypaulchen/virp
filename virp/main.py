@@ -1,11 +1,15 @@
 # main.py
 
+# External Imports
 from pymatgen.core import Structure
 from pymatgen.analysis.structure_matcher import StructureMatcher # Important to compare two constructed structures
 from pymatgen.io.cif import CifWriter # write pymatgen structure to cif
 import random
 import math
 import re
+
+# Internal Imports
+from enumerate import *
 
 def CIFSupercell (inputcif, outputcif, supercellsize):
     # inputcif, outputcif: path to cif file
@@ -68,6 +72,7 @@ def ShuffleOccupiedSites (outfile, edit_block, edit_name):
     # Assign atoms based on proportion in atomoccpairslist
     numberoflines = len(edit_block)
     print("- Number of sites in supercell: ", numberoflines)
+
     atomassignmentlist_float = []
     assignment_cumulative = 0
     assignment_cumulative_int = 0
@@ -115,7 +120,7 @@ def PermutativeFill(input_file, output_file):
             match = pattern.match(thisline)
             
             if match: # we have reached the coordinate block of the .cif file
-                # Extract the name and last number from the match
+                # Extract the site name and last number from the match
                 second_string = match.group(1)  # This will give you 'Ca1'
                 last_number = float(match.group(2)) # The last number
     
