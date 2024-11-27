@@ -9,7 +9,7 @@ import math
 import re
 
 # Internal Imports
-from enumerate import *
+#from enumerate import *
 
 def CIFSupercell (inputcif, outputcif, supercellsize):
     # inputcif, outputcif: path to cif file

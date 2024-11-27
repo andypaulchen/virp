@@ -1,0 +1,54 @@
+Metadata-Version: 2.1
+Name: virp
+Version: 0.1.0
+Summary: VIRtual cell generation by Permutation
+Author-email: Andy Paul Chen <la.vache.qui.vit@gmail.com>
+License: MIT License
+        
+        Copyright (c) 2024 Kedar Hippalgaonkar's Materials by Design Lab
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+        
+Keywords: disordered,virtual cell,cif
+Classifier: Programming Language :: Python :: 3.9
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: pymatgen==2024.10.22
+
+<img src="virplogo.png" width="200" align="center">
+
+# Virp
+ `virp` (VIRtual cell generation by Permutation) is a code for the fast generation of a virtual cell from a crystal structure (in CIF format) containing site disorder. It is named after Singapore's first superhero, VR Man, whose superpower is "Virping". The TV show was supposedly dogwater; we are still proud of him though.
+
+ ## Theory
+ (To be updated!)
+
+ ## Requirements
+ The only package required is Pymatgen (`pymatgen==2024.10.3`)<br>
+ __Optional__: You can also use git for the fancy installation. Otherwise, downloading the .py file will do.
+
+ ## Installation
+ `pip install git+https://github.com/andypaulchen/virp.git`
+
+ ## Versions and changelog
+ `v0.1.1`: first workable code, with function to generate a virtual cell. <br>
+ `v0.2.1`: added enumeration function
+ 
