@@ -15,6 +15,6 @@
 
  ## Versions and changelog
  `v0.1.1`: first workable code, with function to generate a virtual cell. <br>
- `v0.2.1`: added enumeration function
+ `v0.2.1`: added enumeration function <br>
  `v0.2.2`: enumeration can be imported now (fix)
  
