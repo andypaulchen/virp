@@ -5,6 +5,9 @@ setup(
     version="0.3.0",
     packages=find_packages(),
     install_requires=[
-        "pymatgen"
+        "pymatgen",
+        "chgnet",
+        "matgl==1.0.0"
+        "dgl==1.1.2"
     ],
 )
