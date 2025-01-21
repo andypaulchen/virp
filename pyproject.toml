@@ -12,7 +12,9 @@ authors = [
     {name = "Andy Paul Chen", email = "la.vache.qui.vit@gmail.com"}
 ]
 dependencies = [
-    "pymatgen==2024.10.22"
+    "pymatgen"
+    "matgl==1.0.0"
+    "dgl==1.1.2"
 ]
 keywords = ["disordered", "virtual cell", "cif"]
 classifiers = [
