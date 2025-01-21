@@ -1,4 +1,4 @@
-# enumerate: facilitates atom assignment to disordered sites
+# enumerate.py: facilitates atom assignment to disordered sites
 
 from itertools import product
 from math import factorial

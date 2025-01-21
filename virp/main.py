@@ -2,14 +2,14 @@
 
 # External Imports
 from pymatgen.core import Structure
-from pymatgen.analysis.structure_matcher import StructureMatcher # Important to compare two constructed structures
-from pymatgen.io.cif import CifWriter # write pymatgen structure to cif
+from chgnet.model import StructOptimizer
+import warnings
 import random
 import math
 import re
+import os
+import shutil
 
-# Internal Imports
-#from enumerate import *
 
 def CIFSupercell (inputcif, outputcif, supercellsize):
     # inputcif, outputcif: path to cif file
@@ -31,7 +31,6 @@ def CIFSupercell (inputcif, outputcif, supercellsize):
     structure.to(fmt="cif", filename=outputcif)
     print("Supercell created and saved as ", outputcif)
 
-    
 
 def round_with_tie_breaker(n):
     # Separate the fractional and integer parts
@@ -166,3 +165,63 @@ def PermutativeFill(input_file, output_file):
                     # Re-initialize edit parameters
                     edit_block = []     # array to store lines in an editing block
                     edit_name = ""      # stores the site which forms the edit block
+
+
+def SampleVirtualCells(input_cif, supercell, sample_size=400):
+    """
+    Given a disordered .cif file, create an output folder
+    containing a number (sample_size) of virtual cells
+    
+    Args:
+        input_cif (str): Path to .cif (disordered)
+        supercell [int,int,int]: multiplicity of supercell
+        sample_size (int): Number of virtual cells to generate (default is 400)
+        
+    Returns:
+        void
+    """
+    # Init CHGNET optimizer
+    relaxer = StructOptimizer()
+
+    # Suppress warnings in this block
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        # Make output folder directory
+        fname = os.path.splitext(os.path.basename(input_cif))[0]
+        os.makedirs(fname, exist_ok=True)  # `exist_ok=True` avoids errors if the directory exists.
+        print(f"Directory created at: {fname}")
+
+        # Copy input_cif into the folder
+        shutil.copy(input_cif, fname)
+
+        header = os.path.join(fname,fname)
+        source_file = header+".cif"
+        sc_file = header+"_supercell.cif"
+
+        # Make the supercell
+        CIFSupercell (source_file, sc_file, supercell)
+
+        # Create target folders if they don't exist
+        stropt_path = os.path.join(fname,"stropt")
+        no_stropt_path = os.path.join(fname,"no_stropt")
+        os.makedirs(stropt_path, exist_ok=True) # structure-optimized cells
+        os.makedirs(no_stropt_path, exist_ok=True) # non-structure-optimized cells
+
+        # Execution
+        for i in range(sample_size):
+            # Permutative fill only, no structure optimization
+            print("Generating virtual cell #", i, ":")
+            pfill_file_name = fname+"_virtual_"+str(i)+".cif"
+            pfill_file = os.path.join(no_stropt_path,pfill_file_name)
+            PermutativeFill(sc_file, pfill_file)
+
+            # Relax
+            structure = Structure.from_file(pfill_file)
+            result = relaxer.relax(structure, verbose=False)
+            stropt_file_name = fname+"_virtual_"+str(i)+"_stropt.cif"
+            stropt_file = os.path.join(stropt_path,stropt_file_name)
+            result['final_structure'].to(stropt_file)
+        
+        with open(os.path.join(fname,"_JOBDONE"), 'w') as file: pass # make an empty file signalling completion
+        print("All cells generated (see _JOBDONE file).")
