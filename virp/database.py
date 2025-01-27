@@ -6,9 +6,6 @@ from pathlib import Path
 from tqdm import tqdm
 import os
 
-# Internal Imports
-#from enumerate import *
-
 def DisorderQuery(folder_path):
     """
     Process all CIF files in a folder to check for partial occupancy.

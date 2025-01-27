@@ -1,8 +1,11 @@
 # main.py
 
 # External Imports
-from pymatgen.core import Structure
+from pymatgen.core.structure import Structure
 from chgnet.model import StructOptimizer
+from itertools import product
+import numpy as np
+import pandas as pd
 import warnings
 import random
 import math
@@ -192,15 +195,11 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400):
         os.makedirs(fname, exist_ok=True)  # `exist_ok=True` avoids errors if the directory exists.
         print(f"Directory created at: {fname}")
 
-        # Copy input_cif into the folder
-        shutil.copy(input_cif, fname)
-
         header = os.path.join(fname,fname)
-        source_file = header+".cif"
         sc_file = header+"_supercell.cif"
 
         # Make the supercell
-        CIFSupercell (source_file, sc_file, supercell)
+        CIFSupercell (input_cif, sc_file, supercell)
 
         # Create target folders if they don't exist
         stropt_path = os.path.join(fname,"stropt")
@@ -225,3 +224,98 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400):
         
         with open(os.path.join(fname,"_JOBDONE"), 'w') as file: pass # make an empty file signalling completion
         print("All cells generated (see _JOBDONE file).")
+
+
+def SupercellSize(input_cif, minsize=15.0):
+    """
+    Given a disordered .cif file, decide how big the
+    supercell should be (works best for orthogonal cifs)
+    
+    Args:
+        input_cif (str): Path to .cif (disordered)
+        minsize (float): minimum tolerated distance between
+            lattice points in one direction
+
+    Returns:
+        array of 3 integers denoting supercell multiplicity
+    """
+    # init sc_size array, warning
+    sc_size = [0,0,0]
+    warning = False
+
+    # Load the .cif file
+    structure = Structure.from_file(input_cif)
+
+    # Get the lattice vectors
+    lattice = structure.lattice
+    new_lattice = []
+
+    # Execution
+    for i in range(3):
+        uc_length = np.linalg.norm(lattice.matrix[i])
+        sc_size[i] = math.ceil(minsize/uc_length)
+        new_lattice.append(lattice.matrix[i]*sc_size[i])
+
+    # Generate all lattice points for one unit cell
+    lattice_points = [np.dot([i, j, k], new_lattice) for i, j, k in product([0, 1], repeat=3)]
+    # Calculate all pairwise distances
+    distances = []
+    for i, p1 in enumerate(lattice_points):
+        for j, p2 in enumerate(lattice_points):
+            if i < j:  # Avoid duplicate pairs
+                distances.append(np.linalg.norm(p1 - p2))
+
+    # Find the shortest distance
+    shortest_lattice_distance = min(distances)
+
+    # Check if shortest distance between lattice points is under minsize
+    print(f"The shortest distance between lattice points is: {shortest_lattice_distance:.5f} Å")
+    if shortest_lattice_distance < minsize:
+        print("Warning: lattice points still close together for supercell; check orthogonality!")
+        warning = True
+    print(f"Supercell multiplicity: {sc_size}")
+
+    return sc_size, warning
+
+
+def Session(folder_path = "_disordered_cifs", mindist = 15, no_of_samples = 400):
+    # init DataFrame to store results
+    data = []
+
+    # Loop through all .cif files in the folder
+    for filename in os.listdir(folder_path):
+        if filename.endswith(".cif"):  # Check if the file has a .cif extension
+            file_path = os.path.join(folder_path, filename)
+            print(f"Processing .cif file: {file_path}")
+
+            try:
+                # Calculate preferred supercell size
+                sc_size, warning = SupercellSize(file_path, minsize=mindist)
+
+                # Generate virtual cell samples
+                SampleVirtualCells(file_path, sc_size, sample_size=no_of_samples)
+
+                # Extract metadata: chemical formula
+                structure = Structure.from_file(file_path)
+                formula = structure.composition.reduced_formula
+
+                # Append results to the data list
+                data.append({
+                    "filename": filename,
+                    "folder": folder_path,
+                    "formula": formula,
+                    "supercell size": sc_size,
+                    "sample size": no_of_samples,
+                    "lattice spacing warning": warning
+                })
+
+            except Exception as e:
+                print(f"Error processing {file_path}: {e}")
+
+    # Create a DataFrame
+    df = pd.DataFrame(data)
+
+    # Save the DataFrame to a CSV file
+    output_file = "virp_session_summary.csv"
+    df.to_csv(output_file)
+    print(f"Results saved to {output_file}")
