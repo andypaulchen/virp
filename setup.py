@@ -7,7 +7,7 @@ setup(
     install_requires=[
         "pymatgen",
         "chgnet",
-        "matgl==1.0.0"
+        "matgl==1.0.0",
         "dgl==1.1.2"
     ],
 )
