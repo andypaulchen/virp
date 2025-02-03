@@ -22,13 +22,15 @@
  1. To prepare for a session, copy the `session` folder in your workspace and place the `.cif` files you want to process (make virtual cells + postprocessing) in the subfolder `_disordered_cifs`. Feel free to rename `session` folder to something more identifiable
 
  2. Run `generate.py` to create a supercell and (by default) 400 virtual cells.
-    - after this step, a structure subfolder is created in `session` for each `.cif` file in `_disordered_cifs`, with the same name. Inside this folder is a supercell CIF and folders for structure-optimized (`stropt`) and non-structure-optimized virtual cells (`no_stropt`). The details of this run is recorded in `virp_session_summary.csv`.
+    - after this step, a structure subfolder (e.g. `structure`) is created in `session` for each `structure.cif` file in `_disordered_cifs`, with the same name. Inside this folder is a supercell CIF and folders for structure-optimized (`stropt`) and non-structure-optimized virtual cells (`no_stropt`). The details of this run is recorded in `virp_session_summary.csv`.
 
  3. Run `connectivity.py` for atomic connectivity post-processing
     - after this step, the results are written to `connectivity.csv` and `scatterplot.png` under `stropt` and `no_stropt`.
 
  4. Run `properties.py` to predict materials properties. This is performed on `stropt` subfolders only.
-    - after this step, the results are written to `virtual_properties.csv` in the structure subfolder.
+    - after this step, the results are written to `virtual_properties.csv` in the `structure` subfolder.
+
+ In summary, this is what a session looks like after all three routines have completed:
 
  <img src="graphics/operation.png" width="870">
 
@@ -38,4 +40,7 @@
  `v0.2.2`: enumeration can be imported now (fix) <br>
  `v0.3.0`: you can now make a batch of virtual cells<br>
  `v0.4.3`: added tools to build a database
+
+ ## Debugging and support
+ The `virp` code has been tested on a limited number of platforms, so far Windows and Linux. If you are running into any problems during operation, please hound me (Andy Paul Chen) at la.vache.qui.vit(at)gmail.com, and I will try my best to help.
  
