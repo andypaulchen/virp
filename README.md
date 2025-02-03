@@ -1,4 +1,4 @@
-<img src="virplogo.png" width="200">
+<img src="graphics/virplogo.png" width="200">
 
 # Virp
  `virp` (VIRtual cell generation by Permutation) is a code for the fast generation of a virtual cell from a crystal structure (in CIF format) containing site disorder. It is named after Singapore's first superhero, VR Man, whose superpower is "Virping". The show was a flop, but we are still proud of him.
