@@ -1,7 +1,9 @@
 <img src="graphics/virpbanner.png" width="870">
 
-# Virp
- `virp` (VIRtual cell generation by Permutation) is a code for the fast generation of a virtual cell from a crystal structure (in CIF format) containing site disorder. It is named after Singapore's first superhero, VR Man, whose superpower is "Virping". The show was a flop, but we are still proud of him.
+# `virp`: VIRtual cell generation by Permutation
+ `virp` is a code for the fast generation of a virtual cell from a crystal structure (in CIF format) containing site disorder. It is named after Singapore's first superhero, VR Man, whose superpower is "Virping". The show was a flop, but we are still proud of him. 
+ 
+ This project is inspired by the `Supercell` code of Okhotnikov, Charpentier and Cadars (<i>J. Cheminform. <b>8</b>, 17</i>), which formed the basis of our fast virtual cell generation algorithm, as well as the `aflow++` framework (<i>Comput. Mater. Sci. <b>217</b>, 111889</i>), for the statistical postprocessing of materials properties.
 
  ## Theory
  (To be updated!)
