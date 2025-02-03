@@ -15,8 +15,20 @@
  Update to latest release: uninstall and re-install
 
  ## Building a database
- The root directory has a folder (`session`) which holds the python scripts which build a library of virtual cells (`generate.py`) and postprocessing scripts (`connectivity.py` and `properties.py`). After each script is run, the results are saved as `.csv` files. In summary:
- <img src="graphics/operation.png" width="600">
+ The root directory has a folder (`session`) which holds the python scripts which build a library of virtual cells (`generate.py`) and postprocessing scripts (`connectivity.py` and `properties.py`). After each script is run, the results are saved as `.csv` files.
+
+ 1. To prepare for a session, copy the `session` folder in your workspace and place the `.cif` files you want to process (make virtual cells + postprocessing) in the subfolder `_disordered_cifs`. Feel free to rename `session` folder to something more identifiable
+
+ 2. Run `generate.py` to create a supercell and (by default) 400 virtual cells.
+    - after this step, a structure subfolder is created in `session` for each `.cif` file in `_disordered_cifs`, with the same name. Inside this folder is a supercell CIF and folders for structure-optimized (`stropt`) and non-structure-optimized virtual cells (`no_stropt`). The details of this run is recorded in `virp_session_summary.csv`.
+
+ 3. Run `connectivity.py` for atomic connectivity post-processing
+    - after this step, the results are written to `connectivity.csv` and `scatterplot.png` under `stropt` and `no_stropt`.
+
+ 4. Run `properties.py` to predict materials properties. This is performed on `stropt` subfolders only.
+    - after this step, the results are written to `virtual_properties.csv` in the structure subfolder.
+
+ <img src="graphics/operation.png" width="750">
 
  ## Versions and changelog
  `v0.1.1`: first workable code, with function to generate a virtual cell. <br>
