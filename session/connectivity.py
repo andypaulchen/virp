@@ -8,7 +8,8 @@ import os
 # Loop over files in session
 for filename in os.listdir("_disordered_cifs"):
     # Load the .cif file to extract the chemical formula
-    header = os.path.splitext(os.path.basename(filename))[0]
+    if filename.endswith(".cif"):  # Check if the file has a .cif extension
+        header = os.path.splitext(os.path.basename(filename))[0]
     path_to_file = os.path.join("_disordered_cifs", filename)
     structure = Structure.from_file(path_to_file)  
     chemical_formula = structure.composition.reduced_formula
