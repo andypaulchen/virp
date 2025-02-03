@@ -28,7 +28,7 @@
  4. Run `properties.py` to predict materials properties. This is performed on `stropt` subfolders only.
     - after this step, the results are written to `virtual_properties.csv` in the structure subfolder.
 
- <img src="graphics/operation.png" width="750">
+ <img src="graphics/operation.png" width="870">
 
  ## Versions and changelog
  `v0.1.1`: first workable code, with function to generate a virtual cell. <br>
