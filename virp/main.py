@@ -11,7 +11,6 @@ import random
 import math
 import re
 import os
-import shutil
 
 
 def CIFSupercell (inputcif, outputcif, supercellsize):

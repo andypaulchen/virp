@@ -10,4 +10,4 @@ for filename in os.listdir("_disordered_cifs"):
             VirtualCellProperties(os.path.join(header, "stropt"), os.path.join(header, "virtual_properties.csv"))
 
 # For expectation values post-processing step, run
-#ExpectationValues(csv_path, temperature)xanthom
+#ExpectationValues(csv_path, temperature)
