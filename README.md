@@ -9,12 +9,13 @@
  (To be updated!)
 
  ## Requirements
-`pymatgen`, `chgnet`, and `matgl` (`matgl==1.0.0`; `dgl==1.1.2`)<br>
+`pymatgen`, `chgnet`, and `matgl` (`matgl==1.0.0`; `dgl`)<br>
  __Optional__: You can also use git for the fancy installation. Otherwise, downloading the .py file will do.
 
  ## Installation
  `pip install git+https://github.com/andypaulchen/virp.git`<br>
- Update to latest release: uninstall and re-install
+ Update to latest release: uninstall and re-install<br>
+ <b>NEW!</b> Install with `pip install virp`
 
  ## Building a database
  The root directory has a folder (`session`) which holds the python scripts which build a library of virtual cells (`generate.py`) and postprocessing scripts (`connectivity.py` and `properties.py`). After each script is run, the results are saved as `.csv` files.

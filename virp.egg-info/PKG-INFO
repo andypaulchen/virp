@@ -1,6 +1,6 @@
 Metadata-Version: 2.2
 Name: virp
-Version: 0.3.0
+Version: 1.0.1
 Summary: VIRtual cell generation by Permutation
 Author-email: Andy Paul Chen <la.vache.qui.vit@gmail.com>
 License: MIT License
@@ -34,7 +34,8 @@ License-File: LICENSE
 Requires-Dist: pymatgen
 Requires-Dist: chgnet
 Requires-Dist: matgl==1.0.0
-Requires-Dist: dgl==1.1.2
+Requires-Dist: dgl
+Requires-Dist: poshcar
 
 <img src="graphics/virpbanner.png" width="870">
 

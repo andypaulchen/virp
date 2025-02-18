@@ -82,7 +82,7 @@ def enumerate_site(N, compositions, verbose = True):
         return all_snaps, allcombinations
     
 
-def get_site_combination (edit_block, edit_name):
+def get_site_combination(edit_block, edit_name):
     # Auxiliary function which, outside of the enumerate structure routine, will make no sense whatsoever
 
     # 1. What are the unique elements and occupancies?
