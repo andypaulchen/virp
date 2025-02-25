@@ -1,11 +1,18 @@
-# matprop.py
+# matprop.py: Materials properties
 
 from pymatgen.core.structure import Structure
+from chgnet.model.model import CHGNet
 import os
 import csv
 import torch
 import matgl
-from chgnet.model.model import CHGNet
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+# User Functions
+#------------------------------------------------------------------------------------------------------------
 
 def VirtualCellProperties(folder_path, output_csv):
     # To add: customise the set of properties to evaluate
@@ -77,9 +84,6 @@ def VirtualCellProperties(folder_path, output_csv):
     print(f"Results saved to {output_csv}")
 
 
-import pandas as pd
-import numpy as np
-
 def ExpectationValues(csv_path, temperature):
     """
     Calculate Boltzmann-weighted expectation values for all numeric properties
@@ -118,3 +122,65 @@ def ExpectationValues(csv_path, temperature):
         expectation_values[prop] = df[weighted_col_name].sum()
     
     return df, expectation_values
+
+
+def Histograms(folder_path, output_path=None):
+    """
+    Read CSV file and display histograms for all columns except 'File' and 'Total Energy (eV)'.
+    
+    Parameters:
+    folder_path (str): Path to the folder containing the CSV file
+    """
+    # Construct file path
+    csv_path = Path(folder_path) / "virtual_properties.csv"
+    
+    # Check if file exists
+    if not csv_path.is_file():
+        raise FileNotFoundError(f"CSV file not found at {csv_path}")
+    
+    try:
+        # Read CSV file
+        df = pd.read_csv(csv_path)
+        
+        # Remove specified columns
+        exclude_columns = ['File']
+        plot_columns = [col for col in df.columns if col not in exclude_columns]
+        
+        # Calculate number of rows and columns for subplot grid
+        n_plots = len(plot_columns)
+        n_cols = 2  # You can adjust this to change the layout
+        n_rows = (n_plots + n_cols - 1) // n_cols
+        
+        # Create subplots
+        fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 5*n_rows))
+        fig.suptitle('Histograms of Virtual Properties', fontsize=16, y=1.02)
+        
+        # Flatten axes array for easier iteration
+        axes_flat = axes.flatten() if n_plots > 1 else [axes]
+        
+        # Generate histograms for each column
+        for idx, (column, ax) in enumerate(zip(plot_columns, axes_flat)):
+            ax.hist(df[column].dropna(), bins=30, edgecolor='black')
+            ax.set_title(column)
+            ax.set_xlabel(column)
+            ax.set_ylabel('Frequency')
+            ax.grid(True, alpha=0.3)
+            
+        # Hide any unused subplots
+        for idx in range(len(plot_columns), len(axes_flat)):
+            axes_flat[idx].set_visible(False)
+            
+        # Adjust layout
+        plt.tight_layout()
+
+        # Save figure if output path is specified
+        if output_path:
+            output_path = Path(output_path)
+            output_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
+            plt.savefig(output_path, bbox_inches='tight', dpi=300)
+            print(f"Histogram saved to {output_path}")
+            
+        plt.show()
+        
+    except Exception as e:
+        raise Exception(f"Error processing CSV file: {str(e)}")

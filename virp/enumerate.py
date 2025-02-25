@@ -3,7 +3,11 @@
 from itertools import product
 from math import factorial, prod
 import numpy as np
+import pandas as pd
 import re
+
+# Ancillary Functions
+#------------------------------------------------------------------------------------------------------------
 
 def format_integer(num, prec = 6):
     return np.format_float_scientific(num, precision=prec) if num >= 10**prec else str(num)
@@ -105,7 +109,10 @@ def get_site_combination(edit_block, edit_name):
     return combinations
 
 
-def enumerate_structure(input_file):
+# User Functions
+#------------------------------------------------------------------------------------------------------------
+
+def Enumerate(input_file):
     # Given a SUPERCELL .cif structure, return total possible virtual cells,
     # disregarding symmetry equivalence
     print("Input supercell .cif file: ", input_file)
@@ -158,3 +165,20 @@ def enumerate_structure(input_file):
     totalcombinations = prod(product_list)
     print("Total number of combinations for", input_file, ": ", format_integer(totalcombinations))
     return totalcombinations
+
+
+def EquivalentStructures(csv_path):
+    # Read CSV and sort by FormationEnergy
+    df = pd.read_csv(csv_path)
+    number_rows = df.shape[0]
+    df_sorted = df.sort_values(by='FormationEnergy').reset_index(drop=True)
+    
+    # Convert FormationEnergy values to strings
+    energy_strings = df_sorted['FormationEnergy'].astype(str)
+    
+    # Count exact string matches between adjacent terms
+    overlaps = sum(energy_strings.iloc[i] == energy_strings.iloc[i+1] for i in range(len(energy_strings)-1))
+    percentage = 100*overlaps/number_rows
+    
+    print(f"Number of redundant structures: {overlaps}/{number_rows} ({percentage:.2f}%)")
+    return overlaps

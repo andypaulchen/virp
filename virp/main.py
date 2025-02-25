@@ -12,27 +12,8 @@ import math
 import re
 import os
 
-
-def CIFSupercell (inputcif, outputcif, supercellsize):
-    # inputcif, outputcif: path to cif file
-    # supercellsize: vector of 3 integers
-
-    # Load the structure from a CIF file
-    structure = Structure.from_file(inputcif)
-
-    # Define the scaling matrix for the supercell
-    # For example, [2, 0, 0], [0, 2, 0], [0, 0, 2] creates a 2x2x2 supercell
-    scaling_matrix = [[supercellsize[0], 0, 0], 
-                      [0, supercellsize[1], 0], 
-                      [0, 0, supercellsize[2]]]
-
-    # Create the supercell
-    structure.make_supercell(scaling_matrix)
-
-    # Save the supercell to a new CIF file (optional)
-    structure.to(fmt="cif", filename=outputcif)
-    print("Supercell created and saved as ", outputcif)
-
+# Ancillary Functions
+#------------------------------------------------------------------------------------------------------------
 
 def round_with_tie_breaker(n):
     # Separate the fractional and integer parts
@@ -45,7 +26,7 @@ def round_with_tie_breaker(n):
     else:
         # Regular rounding for non 0.5 cases
         return round(n)
-    
+
 
 def ShuffleOccupiedSites (outfile, edit_block, edit_name):
     # Auxiliary function which, outside of the permutative fill routine, will make no sense whatsoever
@@ -103,6 +84,30 @@ def ShuffleOccupiedSites (outfile, edit_block, edit_name):
     edit_block = [re.sub(r'([0-9]+\.[0-9]+)\s*$', '1.0', line) + '\n' for line in edit_block]
     
     for writeline in edit_block: outfile.write(writeline)
+
+
+# User Functions
+#------------------------------------------------------------------------------------------------------------
+
+def CIFSupercell (inputcif, outputcif, supercellsize):
+    # inputcif, outputcif: path to cif file
+    # supercellsize: vector of 3 integers
+
+    # Load the structure from a CIF file
+    structure = Structure.from_file(inputcif)
+
+    # Define the scaling matrix for the supercell
+    # For example, [2, 0, 0], [0, 2, 0], [0, 0, 2] creates a 2x2x2 supercell
+    scaling_matrix = [[supercellsize[0], 0, 0], 
+                      [0, supercellsize[1], 0], 
+                      [0, 0, supercellsize[2]]]
+
+    # Create the supercell
+    structure.make_supercell(scaling_matrix)
+
+    # Save the supercell to a new CIF file (optional)
+    structure.to(fmt="cif", filename=outputcif)
+    print("Supercell created and saved as ", outputcif)
 
 
 def PermutativeFill(input_file, output_file):
@@ -169,7 +174,7 @@ def PermutativeFill(input_file, output_file):
                     edit_name = ""      # stores the site which forms the edit block
 
 
-def SampleVirtualCells(input_cif, supercell, sample_size=400):
+def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
     """
     Given a disordered .cif file, create an output folder
     containing a number (sample_size) of virtual cells
@@ -183,7 +188,7 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400):
         void
     """
     # Init CHGNET optimizer
-    relaxer = StructOptimizer()
+    if relaxer == None: relaxer = StructOptimizer()
 
     # Suppress warnings in this block
     with warnings.catch_warnings():
@@ -277,9 +282,10 @@ def SupercellSize(input_cif, minsize=15.0):
     return sc_size, warning
 
 
-def Session(folder_path = "_disordered_cifs", mindist = 15, no_of_samples = 400):
+def Session(folder_path = "_disordered_cifs", mindist = 15, supercell = None, no_of_samples = 400, relaxer = None):
     # init DataFrame to store results
     data = []
+    if relaxer == None: relaxer = StructOptimizer()
 
     # Loop through all .cif files in the folder
     for filename in os.listdir(folder_path):
@@ -289,10 +295,14 @@ def Session(folder_path = "_disordered_cifs", mindist = 15, no_of_samples = 400)
 
             try:
                 # Calculate preferred supercell size
-                sc_size, warning = SupercellSize(file_path, minsize=mindist)
+                if supercell == None: 
+                    sc_size, warning = SupercellSize(file_path, minsize=mindist)
+                else:
+                    sc_size = supercell
+                    warning = False
 
                 # Generate virtual cell samples
-                SampleVirtualCells(file_path, sc_size, sample_size=no_of_samples)
+                SampleVirtualCells(file_path, sc_size, sample_size=no_of_samples, relaxer=relaxer)
 
                 # Extract metadata: chemical formula
                 structure = Structure.from_file(file_path)
