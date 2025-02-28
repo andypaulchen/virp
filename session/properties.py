@@ -1,13 +1,14 @@
 from virp.matprop import VirtualCellProperties, ExpectationValues
-import os
+from pathlib import Path
 
-for filename in os.listdir("_disordered_cifs"):
-    # extract header string
-    if filename.endswith(".cif"):  # Check if the file has a .cif extension
-        header = os.path.splitext(os.path.basename(filename))[0]
-        if os.path.exists(os.path.join(header, "_JOBDONE")):
-            # note: operation on structure-optimized cells only
-            VirtualCellProperties(os.path.join(header, "stropt"), os.path.join(header, "virtual_properties.csv"))
+disordered_cifs = Path("_disordered_cifs")  # Define the folder path
+
+for cif_file in disordered_cifs.glob("*.cif"):  # Iterate over all .cif files
+    header = cif_file.stem  # Extract filename without extension
+    jobdone_path = Path(header) / "_JOBDONE"  # Path to _JOBDONE file
+
+    if jobdone_path.exists():  # Check if _JOBDONE exists
+        VirtualCellProperties(Path(header) / "stropt", Path(header) / "virtual_properties.csv")
 
 # For expectation values post-processing step, run
-#ExpectationValues(csv_path, temperature)
+# ExpectationValues(csv_path, temperature)

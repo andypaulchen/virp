@@ -4,13 +4,15 @@
 from pymatgen.core.structure import Structure
 from chgnet.model import StructOptimizer
 from itertools import product
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import warnings
 import random
 import math
 import re
-import os
+import sys
+import time
 
 # Ancillary Functions
 #------------------------------------------------------------------------------------------------------------
@@ -28,7 +30,7 @@ def round_with_tie_breaker(n):
         return round(n)
 
 
-def ShuffleOccupiedSites (outfile, edit_block, edit_name):
+def ShuffleOccupiedSites (outfile, edit_block, edit_name, verbose = True):
     # Auxiliary function which, outside of the permutative fill routine, will make no sense whatsoever
 
     # 1. What are the unique elements and occupancies?
@@ -41,9 +43,9 @@ def ShuffleOccupiedSites (outfile, edit_block, edit_name):
             atomoccpairslist.append(atomoccpair)
 
     # Display specifications
-    print("Disordered site name: ", edit_name)
+    if verbose: print("Disordered site name: ", edit_name)
     numberofelements = len(atomoccpairslist)
-    print("- Number of elements in this site: ", numberofelements) # The number of elements in this site = N
+    if verbose: print("- Number of elements in this site: ", numberofelements) # The number of elements in this site = N
 
     # Keep every Nth line in the edit block
     if numberofelements > 1: edit_block = edit_block[::numberofelements]
@@ -53,7 +55,7 @@ def ShuffleOccupiedSites (outfile, edit_block, edit_name):
 
     # Assign atoms based on proportion in atomoccpairslist
     numberoflines = len(edit_block)
-    print("- Number of sites in supercell: ", numberoflines)
+    if verbose: print("- Number of sites in supercell: ", numberoflines)
 
     atomassignmentlist_float = []
     assignment_cumulative = 0
@@ -67,8 +69,8 @@ def ShuffleOccupiedSites (outfile, edit_block, edit_name):
         # tuples for display
         atomassignmentlist_float.append((atomoccpair[0], atomassignment_float, assignment_int))
         
-    print("- Atoms and site assignment (float/rounded): ", atomassignmentlist_float)
-    print("- No of filled sites: ", assignment_cumulative_int,"/",len(edit_block))
+    if verbose: print("- Atoms and site assignment (float/rounded): ", atomassignmentlist_float)
+    if verbose: print("- No of filled sites: ", assignment_cumulative_int,"/",len(edit_block))
     edit_block = edit_block[:assignment_cumulative_int]
 
     # Implement the atom-site assignment in-text
@@ -110,7 +112,7 @@ def CIFSupercell (inputcif, outputcif, supercellsize):
     print("Supercell created and saved as ", outputcif)
 
 
-def PermutativeFill(input_file, output_file):
+def PermutativeFill(input_file, output_file, verbose = True):
     # Updated regex pattern to capture the second string and the last number
     pattern = re.compile(r'\s*\S+\s+(\S+)\s+1\s+[0-9]+\.[0-9]+\s+[0-9]+\.[0-9]+\s+[0-9]+\.[0-9]+\s+([0-9]+\.[0-9]+)')
     
@@ -138,7 +140,7 @@ def PermutativeFill(input_file, output_file):
                         edit_name = second_string # What site is being edited
                     else:
                         if not edit_name == second_string: # if a different site is being considered
-                            ShuffleOccupiedSites(outfile, edit_block, edit_name) # WRITE EDITING BLOCK TO FILE; this also resets it to []
+                            ShuffleOccupiedSites(outfile, edit_block, edit_name, verbose = verbose) # WRITE EDITING BLOCK TO FILE; this also resets it to []
                             # Re-initialize edit parameters
                             edit_block = []     # array to store lines in an editing block
                             edit_active = True
@@ -146,7 +148,7 @@ def PermutativeFill(input_file, output_file):
                             
                 else: # if no longer partial occupancy site
                     if edit_active: 
-                        ShuffleOccupiedSites(outfile, edit_block, edit_name) # WRITE EDITING BLOCK TO FILE
+                        ShuffleOccupiedSites(outfile, edit_block, edit_name, verbose = verbose) # WRITE EDITING BLOCK TO FILE
                         # Re-initialize edit parameters
                         edit_active = False # switch off edit mode
                         edit_block = []     # array to store lines in an editing block
@@ -168,7 +170,7 @@ def PermutativeFill(input_file, output_file):
                     edit_active = False # switch off edit mode
                     
                     # WRITE SEQUENCE
-                    ShuffleOccupiedSites(outfile, edit_block, edit_name)
+                    ShuffleOccupiedSites(outfile, edit_block, edit_name, verbose = verbose)
                     # Re-initialize edit parameters
                     edit_block = []     # array to store lines in an editing block
                     edit_name = ""      # stores the site which forms the edit block
@@ -195,42 +197,42 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
         warnings.simplefilter("ignore")
 
         # Make output folder directory
-        fname = os.path.splitext(os.path.basename(input_cif))[0]
-        os.makedirs(fname, exist_ok=True)  # `exist_ok=True` avoids errors if the directory exists.
+        fname = Path(input_cif).stem
+        Path(fname).mkdir(exist_ok=True)  # `exist_ok=True` avoids errors if the directory exists.
         print(f"Directory created at: {fname}")
 
-        header = os.path.join(fname,fname)
-        sc_file = header+"_supercell.cif"
+        header = Path(fname) / fname
+        sc_file = str(header) + "_supercell.cif"
 
         # Make the supercell
         CIFSupercell (input_cif, sc_file, supercell)
 
         # Create target folders if they don't exist
-        stropt_path = os.path.join(fname,"stropt")
-        no_stropt_path = os.path.join(fname,"no_stropt")
-        os.makedirs(stropt_path, exist_ok=True) # structure-optimized cells
-        os.makedirs(no_stropt_path, exist_ok=True) # non-structure-optimized cells
+        stropt_path = Path(fname) / "stropt"
+        no_stropt_path = Path(fname) / "no_stropt"
+        Path(stropt_path).mkdir(exist_ok=True)  # structure-optimized cells
+        Path(no_stropt_path).mkdir(exist_ok=True)  # non-structure-optimized cells
 
         # Execution
         for i in range(sample_size):
             # Permutative fill only, no structure optimization
-            print("Generating virtual cell #", i, ":")
             pfill_file_name = fname+"_virtual_"+str(i)+".cif"
-            pfill_file = os.path.join(no_stropt_path,pfill_file_name)
-            PermutativeFill(sc_file, pfill_file)
+            pfill_file = Path(no_stropt_path) / pfill_file_name
+            PermutativeFill(sc_file, pfill_file, verbose = True if i == 0 else False)
+            print(f"\rGenerating virtual cell #{i} ({i+1}/{sample_size})", end="", flush=True)
 
             # Relax
             structure = Structure.from_file(pfill_file)
             result = relaxer.relax(structure, verbose=False)
             stropt_file_name = fname+"_virtual_"+str(i)+"_stropt.cif"
-            stropt_file = os.path.join(stropt_path,stropt_file_name)
+            stropt_file = Path(stropt_path) / stropt_file_name 
             result['final_structure'].to(stropt_file)
         
-        with open(os.path.join(fname,"_JOBDONE"), 'w') as file: pass # make an empty file signalling completion
-        print("All cells generated (see _JOBDONE file).")
+        with open(Path(fname) / "_JOBDONE", 'w') as file: pass # make an empty file signalling completion
+        print("\nAll cells generated (see _JOBDONE file).")
 
 
-def SupercellSize(input_cif, minsize=15.0):
+def SupercellSize(input_cif, minsize = None, Supercell = None):
     """
     Given a disordered .cif file, decide how big the
     supercell should be (works best for orthogonal cifs)
@@ -243,9 +245,12 @@ def SupercellSize(input_cif, minsize=15.0):
     Returns:
         array of 3 integers denoting supercell multiplicity
     """
+    # Default minsize is 15 Angstroms
+    if minsize == None and Supercell == None: minsize = 15.0
+    
     # init sc_size array, warning
-    sc_size = [0,0,0]
-    warning = False
+    if Supercell == None: sc_size = [1,1,1]
+    else: sc_size = Supercell
 
     # Load the .cif file
     structure = Structure.from_file(input_cif)
@@ -257,7 +262,7 @@ def SupercellSize(input_cif, minsize=15.0):
     # Execution
     for i in range(3):
         uc_length = np.linalg.norm(lattice.matrix[i])
-        sc_size[i] = math.ceil(minsize/uc_length)
+        if Supercell == None: sc_size[i] = math.ceil(minsize/uc_length)
         new_lattice.append(lattice.matrix[i]*sc_size[i])
 
     # Generate all lattice points for one unit cell
@@ -274,57 +279,67 @@ def SupercellSize(input_cif, minsize=15.0):
 
     # Check if shortest distance between lattice points is under minsize
     print(f"The shortest distance between lattice points is: {shortest_lattice_distance:.5f} Å")
-    if shortest_lattice_distance < minsize:
-        print("Warning: lattice points still close together for supercell; check orthogonality!")
-        warning = True
     print(f"Supercell multiplicity: {sc_size}")
 
-    return sc_size, warning
+    return sc_size, shortest_lattice_distance
 
 
-def Session(folder_path = "_disordered_cifs", mindist = 15, supercell = None, no_of_samples = 400, relaxer = None):
+def Session(folder_path = "_disordered_cifs", mindist = None, supercell = None, sample_size = 400, relaxer = None):
     # init DataFrame to store results
     data = []
-    if relaxer == None: relaxer = StructOptimizer()
+    session_name = Path.cwd().name
+    # for run-id
+    session_stem = ".".join(session_name.rsplit(".", 1)[:-1])
+    ordinal = 1 # for run-id
+    if relaxer == None: 
+        relaxer = StructOptimizer()
+        relaxer_name = "CHGNET"
+
+    # Default mindist is 15 Angstroms
+    if mindist == None and supercell == None: mindist = 15.0
 
     # Loop through all .cif files in the folder
-    for filename in os.listdir(folder_path):
-        if filename.endswith(".cif"):  # Check if the file has a .cif extension
-            file_path = os.path.join(folder_path, filename)
-            print(f"Processing .cif file: {file_path}")
+    for filename in Path(folder_path).glob("*.cif"):
+        print(f"Processing .cif file: {filename}")
 
-            try:
-                # Calculate preferred supercell size
-                if supercell == None: 
-                    sc_size, warning = SupercellSize(file_path, minsize=mindist)
-                else:
-                    sc_size = supercell
-                    warning = False
+        try:
+            # Calculate preferred supercell size
+            sc_size, shortest_lattice_distance = SupercellSize(filename, minsize=mindist, Supercell=supercell)
+            if mindist == None: mindist = shortest_lattice_distance
 
-                # Generate virtual cell samples
-                SampleVirtualCells(file_path, sc_size, sample_size=no_of_samples, relaxer=relaxer)
+            # Generate virtual cell samples
+            SampleVirtualCells(filename, sc_size, sample_size=sample_size, relaxer=relaxer)
 
-                # Extract metadata: chemical formula
-                structure = Structure.from_file(file_path)
-                formula = structure.composition.reduced_formula
+            # Extract metadata: chemical formula
+            structure = Structure.from_file(filename)
+            formula = structure.composition.reduced_formula
+            elements = [str(el) for el in structure.composition.elements]
 
-                # Append results to the data list
-                data.append({
-                    "filename": filename,
-                    "folder": folder_path,
-                    "formula": formula,
-                    "supercell size": sc_size,
-                    "sample size": no_of_samples,
-                    "lattice spacing warning": warning
-                })
+            # Append results to the data list
+            data.append({
+                "session": session_name,
+                "run_id": f"{session_stem}.{ordinal}",
+                "filename": Path(filename).stem,
+                "formula": formula,
+                "elements": elements,
+                "supercell size": sc_size,
+                "image distance (target)": float(mindist),
+                "image distance (actual)": shortest_lattice_distance,
+                "sample size": sample_size,
+                "relaxer": relaxer_name,
+                "connectivity_done": False,
+                "properties_done": False,
+                "provenance": None
+            })
+            ordinal +=1
 
-            except Exception as e:
-                print(f"Error processing {file_path}: {e}")
+        except Exception as e:
+            print(f"Error processing {filename}: {e}")
 
     # Create a DataFrame
     df = pd.DataFrame(data)
 
     # Save the DataFrame to a CSV file
     output_file = "virp_session_summary.csv"
-    df.to_csv(output_file)
+    df.to_csv(output_file, index = False)
     print(f"Results saved to {output_file}")

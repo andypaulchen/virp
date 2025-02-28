@@ -1,7 +1,11 @@
 from virp import Session
+import warnings
 
-# Default Settings
-#Session()
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
 
-# Custom Settings (for testing)
-Session(folder_path = "_disordered_cifs", mindist = 10, no_of_samples = 2)
+    # Default Settings
+    Session()
+
+    # Custom Settings (for testing)
+    #Session(folder_path = "_disordered_cifs", mindist = 10, sample_size = 2)
