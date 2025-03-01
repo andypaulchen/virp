@@ -3,6 +3,7 @@ README.md
 pyproject.toml
 setup.py
 virp/__init__.py
+virp/connect.py
 virp/database.py
 virp/enumerate.py
 virp/main.py

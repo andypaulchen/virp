@@ -2,9 +2,9 @@ from poshcar.disorder import VirtualLibrary, cif2vasp_occ
 from sklearn.linear_model import LinearRegression
 from pymatgen.core.structure import Structure
 from chgnet.model.model import CHGNet
+from chgnet.model import StructOptimizer
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 from pathlib import Path
 
 # Ancillary Functions
@@ -19,7 +19,6 @@ def format_formula(formula):
 #------------------------------------------------------------------------------------------------------------
 
 def ConnectivityAnalysis(folder_path = "_disordered_cifs"):
-    # Generates connectivity analysis
     disordered_cifs = Path(folder_path) # convert to path
     # Load CHGNET (for loops, so we don't do it more than once)
     cn = CHGNet.load()
@@ -79,62 +78,3 @@ def ConnectivityAnalysis(folder_path = "_disordered_cifs"):
                 # Save the plot as a .png file
                 plt.savefig(branch_path / "scatterplot.png", dpi=300, bbox_inches='tight')
                 plt.close()
-
-
-
-def ConnectivityQuery(run_path, output_file="connectivity_analysis.png"):
-    # Create a figure with 2 subplots (side by side)
-    fig, axes = plt.subplots(1, 2, figsize=(12, 6))  # 1 row, 2 columns
-    fig.suptitle("Connectivity Analysis", fontsize=16)
-
-    for i, branch in enumerate(["no_stropt", "stropt"]):
-        csv_path = Path(run_path) / branch / "connectivity.csv"
-        
-        if csv_path.exists():
-            summary_df = pd.read_csv(csv_path)
-            ax = axes[i]  # Select the corresponding subplot
-
-            # Extract x and y data
-            x = summary_df['BondDiff'].values.reshape(-1, 1)  # Ensure 2D for sklearn
-            y = summary_df['FormationEnergy'].values
-
-            # Fit linear regression model
-            model = LinearRegression()
-            model.fit(x, y)
-            y_pred = model.predict(x)
-            r_sq = model.score(x, y)  # R² value
-
-            # Sort x values for smooth plotting
-            sorted_indices = np.argsort(x.flatten())
-            x_sorted = x.flatten()[sorted_indices]
-            y_pred_sorted = y_pred[sorted_indices]
-
-            # Scatterplot
-            ax.scatter(x, y, color='blue', alpha=0.7, label="Data")
-            ax.plot(x_sorted, y_pred_sorted, color='grey', linestyle='--', linewidth=2, label=f'Fit')
-
-            # Labels and title
-            ax.set_xlabel(r'Bonding deviation $\Delta B_{P5}$', fontsize=14)
-            ax.set_ylabel('Formation Energy (eV/at.)', fontsize=14)
-            ax.set_title(branch, fontsize=15)
-
-            # Display R² value on the plot
-            ax.text(0.05, 0.9, f"R² = {r_sq:.2f}", fontsize=14, color='black', transform=ax.transAxes)
-
-            # Grid and legend
-            ax.grid(True, linestyle='--', alpha=0.5)
-            ax.legend()
-
-        else:
-            print(f"Connectivity analysis not found for {branch} branch.")
-            axes[i].set_visible(False)  # Hide empty plots if no data
-
-    # Adjust layout and show the figure
-    plt.tight_layout()
-
-    # Save the figure
-    plt.savefig(output_file, dpi=300, bbox_inches="tight")
-    print(f"Scatterplots saved as {output_file}")
-
-    plt.show()
-

@@ -4,7 +4,77 @@
 from pymatgen.io.cif import CifParser # write pymatgen structure to cif
 from pathlib import Path
 from tqdm import tqdm
-import os
+from pathlib import Path
+import pandas as pd
+
+# Query the local database
+#------------------------------------------------------------------------------------------------------------
+
+def CompileDatabase(output_path = "database.csv"):
+    # Path to current directory
+    current_dir = Path.cwd()
+    
+    # Initialize an empty list to store dataframes
+    all_dataframes = []
+    
+    # Initialize a counter to track how many files we've processed
+    files_processed = 0
+    
+    # Get all subdirectories that start with "S."
+    subdirs = [d for d in current_dir.iterdir() if d.is_dir() and d.name.startswith("S.")]
+    print(f"Found {len(subdirs)} Virp session subdirectories")
+    
+    # Loop through each subdirectory
+    for subdir in subdirs:
+        # Path to the CSV file in this subdirectory
+        csv_path = subdir / "virp_session_summary.csv"
+        
+        # Check if the file exists
+        if csv_path.exists():
+            try:
+                # Read the CSV file into a dataframe
+                df = pd.read_csv(csv_path)
+                
+                # Append this dataframe to our list
+                all_dataframes.append(df)
+                
+                # Increment counter
+                files_processed += 1
+                print(f"Processed: {csv_path}")
+                
+            except Exception as e:
+                print(f"Error processing {csv_path}: {e}")
+        else:
+            print(f"File not found: {csv_path}")
+    
+    # If we found any files, concatenate them
+    if all_dataframes:
+        # Concatenate all dataframes
+        combined_df = pd.concat(all_dataframes, ignore_index=True)
+        
+        # Write the combined dataframe to a new CSV file
+        output_path = current_dir / Path(output_path)
+        combined_df.to_csv(output_path, index=False)
+        
+        print(f"\nSuccessfully combined {files_processed} files into {output_path}")
+        print(f"The combined database has {len(combined_df)} rows and {len(combined_df.columns)} columns")
+    else:
+        print("No files were found to concatenate.")
+    
+    return combined_df
+
+
+def ImportDatabase(input_path = "database.csv"):
+    # Same as CompileDatabase, but reads the combined CSV file only
+    try:
+        df = pd.read_csv(input_path)
+        return df
+    except Exception as e:
+        print(f"Error processing {input_path}: {e}")
+
+
+# Query an external database
+#------------------------------------------------------------------------------------------------------------
 
 def DisorderQuery(folder_path):
     """
@@ -65,7 +135,6 @@ def DisorderQuery(folder_path):
     return results
 
 
-
 def is_SiteDisordered(cif_path):
     """
     Check if a CIF file contains sites with partial occupancy.
@@ -86,12 +155,11 @@ def is_SiteDisordered(cif_path):
         - partial_sites: list of tuples (site index, species, occupancy)
     """
     # Verify file exists
-    if not os.path.exists(cif_path):
-        raise FileNotFoundError(f"CIF file not found: {cif_path}")
+    if not Path(cif_path).exists(): raise FileNotFoundError(f"CIF file not found: {cif_path}")
     
     # Parse the CIF file
     parser = CifParser(cif_path)
-    structure = parser.get_structures()[0]
+    structure = parser.parse_structures(primitive=True)[0]
     
     # Initialize results
     partial_sites = []

@@ -73,6 +73,17 @@ def ImportDatabase(input_path = "database.csv"):
         print(f"Error processing {input_path}: {e}")
 
 
+def GetPath(df, run_id):
+    # Check if run_id exists
+    if run_id in df["run_id"].values:
+        subfolder = df.loc[df['run_id'] == run_id, 'source_folder'].iloc[0]
+        subsubfolder = df.loc[df['run_id'] == run_id, 'filename'].iloc[0]
+        return Path(subfolder) / Path(subsubfolder)
+    else:
+        print(f"Run ID {run_id} not found in the database.")
+        return None
+
+
 # Query an external database
 #------------------------------------------------------------------------------------------------------------
 
