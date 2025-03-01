@@ -313,7 +313,7 @@ def Session(folder_path = "_disordered_cifs", mindist = None, supercell = None, 
             # Extract metadata: chemical formula
             structure = Structure.from_file(filename)
             formula = structure.composition.reduced_formula
-            elements = [str(el) for el in structure.composition.elements]
+            elements = [str(el.symbol) for el in structure.composition.elements]
 
             # Append results to the data list
             data.append({
