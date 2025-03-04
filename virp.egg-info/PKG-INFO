@@ -45,16 +45,14 @@ Requires-Dist: poshcar
  This project is inspired by the `Supercell` code of Okhotnikov, Charpentier and Cadars (<i>J. Cheminform. <b>8</b>, 17</i>), which formed the basis of our fast virtual cell generation algorithm, as well as the `aflow++` framework (<i>Comput. Mater. Sci. <b>217</b>, 111889</i>), for the statistical postprocessing of materials properties.
 
  ## Theory
- (To be updated!)
+ First principles materials simulations and computational materials databases are adapted to represent ideal, ordered crystalline materials. However, to treat stoichiometric tuning in chemical compositions, defect-ordered compounds, metal alloys, or many naturally-occuring minerals, site disorder has to be considered. This has been variously treated with special quasirandom structures, cluster expansion, or statistical combination of simulation results from a library of quasirandom structures (here, we call them <i>virtual cells</i>). The configurational space of virtual cells and their simulated properties can be sampled with a relatively small sample set <i>(proof incoming)</i>. The prediction of structural parameters and materials properties is expedited using machine-learned force fields (e.g. CHGNET) and band gap prediction models (`matgl`). 
 
- ## Requirements
-`pymatgen`, `chgnet`, and `matgl` (`matgl==1.0.0`; `dgl`)<br>
- __Optional__: You can also use git for the fancy installation. Otherwise, downloading the .py file will do.
+  <img src="graphics/workflow.png" width="870">
 
  ## Installation
- `pip install git+https://github.com/andypaulchen/virp.git`<br>
+ <b>Install github instance: </b>`pip install git+https://github.com/andypaulchen/virp.git`<br>
  Update to latest release: uninstall and re-install<br>
- <b>NEW!</b> Install with `pip install virp`
+ <b>Install PyPI release: </b> `pip install virp`
 
  ## Building a database
  The root directory has a folder (`session`) which holds the python scripts which build a library of virtual cells (`generate.py`) and postprocessing scripts (`connectivity.py` and `properties.py`). After each script is run, the results are saved as `.csv` files.
@@ -74,13 +72,16 @@ Requires-Dist: poshcar
 
  <img src="graphics/operation.png" width="870">
 
+ The folder `database_demo` contains `Postprocessing Demo.ipynb`, which concatenates individual sessions into a database (`database.csv`), and conducts postprocessing routines.
+
  ## Versions and changelog
  `v0.1.1`: first workable code, with function to generate a virtual cell. <br>
  `v0.2.1`: added enumeration function <br>
  `v0.2.2`: enumeration can be imported now (fix) <br>
  `v0.3.0`: you can now make a batch of virtual cells<br>
- `v0.4.3`: added tools to build a database
- `v1.1.0`: major user-friendliness updates, database compilation
+ `v0.4.3`: added tools to build a database<br>
+ `v1.1.0`: major user-friendliness updates, database compilation<br>
+ `v1.2.0`: you can now store log files
 
  ## Debugging and support
  The `virp` code has been tested on a limited number of platforms, so far Windows and Linux. If you are running into any problems during operation, please hound me (Andy Paul Chen) at la.vache.qui.vit(at)gmail.com, and I will try my best to help.

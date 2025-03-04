@@ -9,7 +9,7 @@ from .main import *
 from .enumerate import *
 
 __copyright__  = "Kedar Hippalgaonkar's Materials by Design Lab"
-__version__    =  "1.1.0"
+__version__    =  "1.2.0"
 __maintainer__ = "Andy Paul Chen"
 __email__      = "la.vache.qui.vit@gmail.com"
 __status__     = "Development"
