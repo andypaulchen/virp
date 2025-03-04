@@ -3,16 +3,15 @@
 # External Imports
 from pymatgen.core.structure import Structure
 from chgnet.model import StructOptimizer
-from itertools import product
+
 from pathlib import Path
 import numpy as np
 import pandas as pd
+import itertools
 import warnings
 import random
 import math
 import re
-import sys
-import time
 
 # Ancillary Functions
 #------------------------------------------------------------------------------------------------------------
@@ -115,6 +114,10 @@ def CIFSupercell (inputcif, outputcif, supercellsize):
 def PermutativeFill(input_file, output_file, verbose = True):
     # Updated regex pattern to capture the second string and the last number
     pattern = re.compile(r'\s*\S+\s+(\S+)\s+1\s+[0-9]+\.[0-9]+\s+[0-9]+\.[0-9]+\s+[0-9]+\.[0-9]+\s+([0-9]+\.[0-9]+)')
+
+    # Append a line to the input file to avoid EOF issues
+    with open(input_file, 'a') as infile:
+        infile.write("\n#EOF")  # Append at the end
     
     # Open the input file to read and the output file to write
     with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
@@ -122,6 +125,7 @@ def PermutativeFill(input_file, output_file, verbose = True):
         edit_active = False # is thisline in an editing block?
         edit_block = []     # array to store lines in an editing block
         edit_name = ""      # stores the site which forms the edit block
+        #lines = infile.readlines()  # Read all lines
         
         for thisline in infile: # scan through the file
             # Check if the line matches the pattern
@@ -165,7 +169,7 @@ def PermutativeFill(input_file, output_file, verbose = True):
                     outfile.write(thisline)
     
             else: # other lines we are not bothered with
-                outfile.write(thisline)
+                if thisline.strip() != "#EOF": outfile.write(thisline)
                 if edit_active: # we have reached the end of the coordinate block
                     edit_active = False # switch off edit mode
                     
@@ -174,6 +178,11 @@ def PermutativeFill(input_file, output_file, verbose = True):
                     # Re-initialize edit parameters
                     edit_block = []     # array to store lines in an editing block
                     edit_name = ""      # stores the site which forms the edit block
+    
+    # Remove the last line (EOF) from the input file
+    with open(input_file, 'r') as infile: lines = infile.readlines()  # Read all lines
+    if lines and lines[-1].strip() == "#EOF": lines.pop()
+    with open(input_file, 'w') as outfile: outfile.writelines(lines)  # Write back without "#EOF"
 
 
 def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
@@ -205,7 +214,7 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
         sc_file = str(header) + "_supercell.cif"
 
         # Make the supercell
-        CIFSupercell (input_cif, sc_file, supercell)
+        CIFSupercell(input_cif, sc_file, supercell)
 
         # Create target folders if they don't exist
         stropt_path = Path(fname) / "stropt"
@@ -266,7 +275,7 @@ def SupercellSize(input_cif, minsize = None, Supercell = None):
         new_lattice.append(lattice.matrix[i]*sc_size[i])
 
     # Generate all lattice points for one unit cell
-    lattice_points = [np.dot([i, j, k], new_lattice) for i, j, k in product([0, 1], repeat=3)]
+    lattice_points = [np.dot([i, j, k], new_lattice) for i, j, k in itertools.product([0, 1], repeat=3)]
     # Calculate all pairwise distances
     distances = []
     for i, p1 in enumerate(lattice_points):

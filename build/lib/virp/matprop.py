@@ -92,7 +92,7 @@ def ExpectationValues(csv_path, temperature):
         temperature (float): Temperature in Kelvin
         
     Returns:
-        tuple: (DataFrame, dictionary of expectation values)
+        tuple: dictionary of expectation values
     """
     # Read the CSV file
     df = pd.read_csv(csv_path)
@@ -120,10 +120,10 @@ def ExpectationValues(csv_path, temperature):
         df[weighted_col_name] = (df[prop] * df['weights']) / total_weights
         expectation_values[prop] = df[weighted_col_name].sum()
     
-    return df, expectation_values
+    return expectation_values
 
 
-def Histograms(folder_path, output_path=None):
+def Histograms(folder_path, temperature = 300, output_path=None):
     """
     Read CSV file and display histograms for all columns except 'File' and 'Total Energy (eV)'.
     
@@ -156,14 +156,21 @@ def Histograms(folder_path, output_path=None):
         
         # Flatten axes array for easier iteration
         axes_flat = axes.flatten() if n_plots > 1 else [axes]
+
+        # Compute expectation value
+        expectation_value = ExpectationValues(csv_path, temperature)
         
         # Generate histograms for each column
         for idx, (column, ax) in enumerate(zip(plot_columns, axes_flat)):
-            ax.hist(df[column].dropna(), bins=30, edgecolor='black')
+            ax.hist(df[column].dropna(), bins=30, edgecolor='black', color='sandybrown')
             ax.set_title(column)
             ax.set_xlabel(column)
             ax.set_ylabel('Frequency')
             ax.grid(True, alpha=0.3)
+
+            if column != "Total Energy (eV)":
+                # Draw vertical dotted line at expectation value
+                ax.axvline(expectation_value[column], color='orangered', linestyle='dashed', linewidth=2, label=f"{temperature}K")
             
         # Hide any unused subplots
         for idx in range(len(plot_columns), len(axes_flat)):

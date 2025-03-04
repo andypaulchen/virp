@@ -4,3 +4,4 @@ tests/.ipynb_checkpoints/test-checkpoint.ipynb
 virp/.ipynb_checkpoints
 virp/__pycache__
 virp.egg-info/
+/virp.egg-info

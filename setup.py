@@ -9,6 +9,6 @@ setup(
         "chgnet",
         "matgl==1.0.0",
         "dgl",
-        "poshcar"
+        "poshcar>=2.0.2"
     ],
 )
