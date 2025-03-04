@@ -1,5 +1,9 @@
 from virp import Session
 import warnings
+import sys
+
+# Redirect stdout to a file
+sys.stdout = open("out_generate.log", "w")
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")

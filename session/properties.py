@@ -1,6 +1,10 @@
 from virp.matprop import VirtualCellProperties
 from pathlib import Path
 import warnings
+import sys
+
+# Redirect stdout to a file
+sys.stdout = open("out_properties.log", "w")
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
