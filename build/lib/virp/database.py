@@ -76,7 +76,7 @@ def ImportDatabase(input_path = "database.csv"):
 def GetPath(df, run_id):
     # Check if run_id exists
     if run_id in df["run_id"].values:
-        subfolder = df.loc[df['run_id'] == run_id, 'source_folder'].iloc[0]
+        subfolder = df.loc[df['run_id'] == run_id, 'session'].iloc[0]
         subsubfolder = df.loc[df['run_id'] == run_id, 'filename'].iloc[0]
         return Path(subfolder) / Path(subsubfolder)
     else:
