@@ -8,12 +8,12 @@
  ## Theory
  First principles materials simulations and computational materials databases are adapted to represent ideal, ordered crystalline materials. However, to treat stoichiometric tuning in chemical compositions, defect-ordered compounds, metal alloys, or many naturally-occuring minerals, site disorder has to be considered. This has been variously treated with special quasirandom structures, cluster expansion, or statistical combination of simulation results from a library of quasirandom structures (here, we call them <i>virtual cells</i>). The configurational space of virtual cells and their simulated properties can be sampled with a relatively small sample set <i>(proof incoming)</i>. The prediction of structural parameters and materials properties is expedited using machine-learned force fields (e.g. CHGNET) and band gap prediction models (`matgl`). 
 
-  <img src="graphics/workflow.png" width="869">
+  <img src="graphics/workflow.png" width="870">
 
  ## Installation
- `pip install git+https://github.com/andypaulchen/virp.git`<br>
+ <b>Install github instance: </b>`pip install git+https://github.com/andypaulchen/virp.git`<br>
  Update to latest release: uninstall and re-install<br>
- <b>NEW!</b> Install with `pip install virp`
+ <b>Install PyPI release: </b> `pip install virp`
 
  ## Building a database
  The root directory has a folder (`session`) which holds the python scripts which build a library of virtual cells (`generate.py`) and postprocessing scripts (`connectivity.py` and `properties.py`). After each script is run, the results are saved as `.csv` files.
