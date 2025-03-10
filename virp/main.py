@@ -352,3 +352,80 @@ def Session(folder_path = "_disordered_cifs", mindist = None, supercell = None, 
     output_file = "virp_session_summary.csv"
     df.to_csv(output_file, index = False)
     print(f"Results saved to {output_file}")
+
+
+def SessionICSD(csv_path, qrange = None, mindist = None, supercell = None, sample_size = 400, relaxer = None):
+    # Make _disordered_cifs path if not already existing
+    Path("_disordered_cifs").mkdir(exist_ok=True)
+
+    # Import CSV database
+    db_dis = pd.read_csv(csv_path)
+    if qrange == None: qrange = len(db_dis) # if unspecified, process all entries
+
+    # init DataFrame to store results
+    data = []
+    session_name = Path.cwd().name
+    # for run-id
+    session_stem = ".".join(session_name.rsplit(".", 1)[:-1])
+    ordinal = 1 # for run-id
+    if relaxer == None: 
+        relaxer = StructOptimizer()
+        relaxer_name = "CHGNET"
+
+    # Default mindist is 15 Angstroms
+    if mindist == None and supercell == None: mindist = 15.0
+
+    # Loop through all .cif files in the folder
+    for entry in qrange:
+        entry = int(entry)
+        print("Processing entry #",entry)
+        try:
+            # write structure to temporary cif path
+            with open("temp.cif", "w", encoding="utf-8", errors="replace") as f:
+                f.write(db_dis['cif'].iloc[entry])
+
+            #Extract metadata: chemical formula
+            structure = Structure.from_file("temp.cif")
+            formula = structure.composition.reduced_formula
+            elements = [str(el.symbol) for el in structure.composition.elements]
+
+            filename = str(db_dis['CollectionCode'].iloc[entry])+"_"+formula+".cif"
+            Path("temp.cif").rename(Path("_disordered_cifs") / filename)
+            print(f"Writing to .cif file: {filename}")
+
+            # Calculate preferred supercell size
+            sc_size, shortest_lattice_distance = SupercellSize(Path("_disordered_cifs") / filename, minsize=mindist, Supercell=supercell)
+            if mindist == None: mindist = shortest_lattice_distance
+
+            # Generate virtual cell samples
+            SampleVirtualCells(Path("_disordered_cifs") / filename, sc_size, sample_size=sample_size, relaxer=relaxer)
+
+           
+            # Append results to the data list
+            data.append({
+                "session": session_name,
+                "run_id": f"{session_stem}.{ordinal}",
+                "filename": Path(filename).stem,
+                "formula": formula,
+                "elements": elements,
+                "supercell size": sc_size,
+                "image distance (target)": float(mindist),
+                "image distance (actual)": shortest_lattice_distance,
+                "sample size": sample_size,
+                "relaxer": relaxer_name,
+                "connectivity_done": False,
+                "properties_done": False,
+                "provenance": "ICSD"
+            })
+            ordinal +=1
+
+        except Exception as e:
+            print(f"Error processing Entry #{entry}: {e}")
+
+    # Create a DataFrame
+    df = pd.DataFrame(data)
+
+    # Save the DataFrame to a CSV file
+    output_file = "virp_session_summary.csv"
+    df.to_csv(output_file, index = False)
+    print(f"Results saved to {output_file}")
