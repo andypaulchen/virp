@@ -171,10 +171,10 @@ def EquivalentStructures(csv_path):
     # Read CSV and sort by FormationEnergy
     df = pd.read_csv(csv_path)
     number_rows = df.shape[0]
-    df_sorted = df.sort_values(by='FormationEnergy').reset_index(drop=True)
+    df_sorted = df.sort_values(by='Total Energy (eV)').reset_index(drop=True)
     
     # Convert FormationEnergy values to strings
-    energy_strings = df_sorted['FormationEnergy'].astype(str)
+    energy_strings = df_sorted['Total Energy (eV)'].astype(str)
     
     # Count exact string matches between adjacent terms
     overlaps = sum(energy_strings.iloc[i] == energy_strings.iloc[i+1] for i in range(len(energy_strings)-1))

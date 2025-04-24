@@ -83,7 +83,7 @@ def VirtualCellProperties(folder_path, output_csv):
     print(f"Results saved to {output_csv}")
 
 
-def ExpectationValues(csv_path, temperature):
+def ExpectationValues(csv_path, temperature, N = None, random_state = 42):
     """
     Calculate Boltzmann-weighted expectation values for all numeric properties
     
@@ -96,6 +96,7 @@ def ExpectationValues(csv_path, temperature):
     """
     # Read the CSV file
     df = pd.read_csv(csv_path)
+    if N: df = df.sample(n=N, random_state=random_state)
     
     # Boltzmann constant in eV/K = 0.00008617
     k_B = 0.0000861733326
