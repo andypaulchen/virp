@@ -90,7 +90,7 @@ def ShuffleOccupiedSites (outfile, edit_block, edit_name, verbose = True):
 # User Functions
 #------------------------------------------------------------------------------------------------------------
 
-def CIFSupercell (inputcif, outputcif, supercellsize):
+def CIFSupercell (inputcif, outputcif, supercellsize, verbose = True):
     # inputcif, outputcif: path to cif file
     # supercellsize: vector of 3 integers
 
@@ -108,7 +108,7 @@ def CIFSupercell (inputcif, outputcif, supercellsize):
 
     # Save the supercell to a new CIF file (optional)
     structure.to(fmt="cif", filename=outputcif)
-    print("Supercell created and saved as ", outputcif)
+    if verbose: print("Supercell created and saved as ", outputcif)
 
 
 def PermutativeFill(input_file, output_file, verbose = True):
