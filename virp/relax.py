@@ -171,6 +171,9 @@ class ML_Relaxer:
         elif self.calc_name == 'mace_omat':
             from mace.calculators import mace_mp
             calc = mace_mp(model="medium-omat-0", dispersion=False, default_dtype="float64",device=self.device)
+        elif self.calc_name == 'mace_r2scan':
+            from mace.calculators import mace_mp
+            calc = mace_mp(model="mace-matpes-r2scan-0", dispersion=False, default_dtype="float64",device=self.device)
         else:
             raise RuntimeError('Calculator not found!')
         return calc
