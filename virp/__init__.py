@@ -7,6 +7,7 @@ Virp (VIRtual cell generation by Permutation) is a code for generating a virtual
 
 from .main import *
 from .enumerate import *
+from .relax import *
 
 __copyright__  = "Kedar Hippalgaonkar's Materials by Design Lab"
 __version__    =  "1.2.2"
