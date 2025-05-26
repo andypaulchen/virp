@@ -232,7 +232,10 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
 
             # Relax
             structure = Structure.from_file(pfill_file)
-            result = relaxer.relax(structure, verbose=False)
+            if relaxer == StructOptimizer:
+                result = relaxer.relax(structure, verbose=False)
+            else:
+                result = relaxer.relax(structure, log_file=Path(fname)/"opt.log", verbose=False)
             stropt_file_name = fname+"_virtual_"+str(i)+"_stropt.cif"
             stropt_file = Path(stropt_path) / stropt_file_name 
             result['final_structure'].to(stropt_file)
@@ -303,6 +306,8 @@ def Session(folder_path = "_disordered_cifs", mindist = None, supercell = None, 
     if relaxer == None: 
         relaxer = StructOptimizer()
         relaxer_name = "CHGNET"
+    else:
+        relaxer_name = relaxer.calc_name
 
     # Default mindist is 15 Angstroms
     if mindist == None and supercell == None: mindist = 15.0
@@ -349,7 +354,7 @@ def Session(folder_path = "_disordered_cifs", mindist = None, supercell = None, 
     df = pd.DataFrame(data)
 
     # Save the DataFrame to a CSV file
-    output_file = "virp_session_summary.csv"
+    output_file = str(Path(folder_path)/"virp_session_summary.csv")
     df.to_csv(output_file, index = False)
     print(f"Results saved to {output_file}")
 

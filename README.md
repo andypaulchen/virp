@@ -42,7 +42,8 @@
  `v0.3.0`: you can now make a batch of virtual cells<br>
  `v0.4.3`: added tools to build a database<br>
  `v1.1.0`: major user-friendliness updates, database compilation<br>
- `v1.2.0`: you can now store log files
+ `v1.2.0`: you can now store log files<br>
+ `v1.3.0`: you can now choose the relaxer algorithm
 
  ## Debugging and support
  The `virp` code has been tested on a limited number of platforms, so far Windows and Linux. If you are running into any problems during operation, please hound me (Andy Paul Chen) at la.vache.qui.vit(at)gmail.com, and I will try my best to help.

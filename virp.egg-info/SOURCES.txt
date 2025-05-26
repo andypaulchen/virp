@@ -8,6 +8,7 @@ virp/database.py
 virp/enumerate.py
 virp/main.py
 virp/matprop.py
+virp/relax.py
 virp.egg-info/PKG-INFO
 virp.egg-info/SOURCES.txt
 virp.egg-info/dependency_links.txt
