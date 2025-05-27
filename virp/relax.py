@@ -52,7 +52,6 @@ class ML_Relaxer:
         else:
             self.device = device
 
-
         if isinstance(optimizer, str):
             optimizer_obj = OPTIMIZERS.get(optimizer, None)
         elif optimizer is None:
@@ -133,7 +132,7 @@ class ML_Relaxer:
         )
 
         return {
-            "final_structure": atoms,
+            "final_structure": struct
         }
     def get_calc(self):
         """ Get calculator from the given name
