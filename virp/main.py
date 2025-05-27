@@ -204,9 +204,7 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
         warnings.simplefilter("ignore")
 
         # Init CHGNET optimizer
-        if relaxer == None: 
-            relaxer = StructOptimizer()
-            relaxer_name = "CHGNET"
+        if relaxer == None: relaxer = StructOptimizer()
 
         # Make output folder directory
         fname = Path(input_cif).stem
@@ -236,7 +234,6 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
             # Relax
             structure = Structure.from_file(pfill_file)
             result = relaxer.relax(structure, verbose=False)
-
             stropt_file_name = fname+"_virtual_"+str(i)+"_stropt.cif"
             stropt_file = Path(stropt_path) / stropt_file_name 
             result['final_structure'].to(stropt_file)
