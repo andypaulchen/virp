@@ -198,12 +198,15 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
     Returns:
         void
     """
-    # Init CHGNET optimizer
-    if relaxer == None: relaxer = StructOptimizer()
 
     # Suppress warnings in this block
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
+
+        # Init CHGNET optimizer
+        if relaxer == None: 
+            relaxer = StructOptimizer()
+            relaxer_name = "CHGNET"
 
         # Make output folder directory
         fname = Path(input_cif).stem
@@ -232,8 +235,8 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
 
             # Relax
             structure = Structure.from_file(pfill_file)
-            if relaxer == StructOptimizer:
-                result = relaxer.relax(structure, verbose=False)
+            result = relaxer.relax(structure, verbose=False)
+
             stropt_file_name = fname+"_virtual_"+str(i)+"_stropt.cif"
             stropt_file = Path(stropt_path) / stropt_file_name 
             result['final_structure'].to(stropt_file)
@@ -302,10 +305,11 @@ def Session(folder_path = "_disordered_cifs", mindist = None, supercell = None, 
     session_stem = ".".join(session_name.rsplit(".", 1)[:-1])
     ordinal = 1 # for run-id
     if relaxer == None: 
-        relaxer = StructOptimizer()
         relaxer_name = "CHGNET"
+        print("Using default relaxer: CHGNET StructOptimizer")
     else:
         relaxer_name = relaxer.calc_name
+        print("Using relaxer: ", relaxer_name)
 
     # Default mindist is 15 Angstroms
     if mindist == None and supercell == None: mindist = 15.0

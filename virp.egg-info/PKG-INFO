@@ -1,11 +1,11 @@
 Metadata-Version: 2.4
 Name: virp
-Version: 1.3.0
+Version: 1.3.1
 Summary: VIRtual cell generation by Permutation
 Author-email: Andy Paul Chen <la.vache.qui.vit@gmail.com>
 License: MIT License
         
-        Copyright (c) 2024 Kedar Hippalgaonkar's Materials by Design Lab
+        Copyright (c) 2024-2025 Kedar Hippalgaonkar's Materials by Design Lab
         
         Permission is hereby granted, free of charge, to any person obtaining a copy
         of this software and associated documentation files (the "Software"), to deal
@@ -82,8 +82,8 @@ Dynamic: license-file
  `v0.3.0`: you can now make a batch of virtual cells<br>
  `v0.4.3`: added tools to build a database<br>
  `v1.1.0`: major user-friendliness updates, database compilation<br>
- `v1.2.0`: you can now store log files<br>
- `v1.3.0`: you can now choose the relaxer algorithm
+ `v1.2.x`: you can now store log files<br>
+ `v1.3.x`: you can now choose the relaxer algorithm
 
  ## Debugging and support
  The `virp` code has been tested on a limited number of platforms, so far Windows and Linux. If you are running into any problems during operation, please hound me (Andy Paul Chen) at la.vache.qui.vit(at)gmail.com, and I will try my best to help.
