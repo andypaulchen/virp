@@ -234,8 +234,6 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
             structure = Structure.from_file(pfill_file)
             if relaxer == StructOptimizer:
                 result = relaxer.relax(structure, verbose=False)
-            else:
-                result = relaxer.relax(structure, log_file=Path(fname)/"opt.log", verbose=False)
             stropt_file_name = fname+"_virtual_"+str(i)+"_stropt.cif"
             stropt_file = Path(stropt_path) / stropt_file_name 
             result['final_structure'].to(stropt_file)

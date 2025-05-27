@@ -18,7 +18,7 @@ with warnings.catch_warnings():
     )
 
     # Default Settings
-    Session(folder_path = "_disordered_cifs",relaxer=relaxer)
+    Session(folder_path = "_disordered_cifs", relaxer = relaxer)
 
     # Custom Settings (for testing)
-    #Session(folder_path = "_disordered_cifs", mindist = 10, sample_size = 2)
+    #Session(folder_path = "_disordered_cifs", mindist = 10, sample_size = 2, relaxer = None)

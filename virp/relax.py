@@ -6,13 +6,13 @@ from ase.optimize.fire import FIRE
 from ase.optimize.lbfgs import LBFGS, LBFGSLineSearch
 from ase.optimize.mdmin import MDMin
 from ase.optimize.sciopt import SciPyFminBFGS, SciPyFminCG
-from ase import Atoms, units
-from ase.calculators.calculator import Calculator
-from pymatgen.core.structure import Molecule, Structure
+from ase import Atoms #, units
+#from ase.calculators.calculator import Calculator
+from pymatgen.core.structure import Structure # Molecule
 from pymatgen.io.ase import AseAtomsAdaptor
-
 from ase.optimize.optimize import Optimizer
-from pathlib import Path
+import torch
+#from pathlib import Path
 
 
 OPTIMIZERS = {
@@ -34,7 +34,7 @@ class ML_Relaxer:
         calc_name: str | str = "mace_large",
         calc_paths: str | None = None,
         optimizer: Optimizer | str = "FIRE",
-        device: str = "cuda",
+        device: str | None = None,
         relax_cell: bool | None = True,
         ase_filter: Filter = FrechetCellFilter
     ):
@@ -46,6 +46,13 @@ class ML_Relaxer:
             device (str): device to use. Defaults to "cuda".
             relax_cell (bool): whether to relax the lattice cell. Defaults to True.
         """
+        # Adapt to CPU-only machines
+        if device is None:
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        else:
+            self.device = device
+
+
         if isinstance(optimizer, str):
             optimizer_obj = OPTIMIZERS.get(optimizer, None)
         elif optimizer is None:
