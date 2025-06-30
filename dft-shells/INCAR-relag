@@ -1,0 +1,26 @@
+# INCAR file for VASP calculation
+SYSTEM = CoFe
+ISTART = 0                 # Don't read WAVECAR
+ENCUT = 520                # Energy cutoff for plane wave basis sets (in eV)
+PREC = Accurate            # Precision setting
+ISMEAR = 0                 # Gaussian smearing
+SIGMA = 0.1                # Smearing width
+IBRION = 2                 # Conjugate gradient optimization
+NSW = 400                  # Optimization of structure
+EDIFF = 1E-6               # Convergence criterion for electronic iterations
+EDIFFG = -0.02             # Convergence criterion for ionic steps (in eV/Å)
+ISIF = 3                   # Relaxation of cell shape and volume, positions
+ISPIN = 1                  # Spin polarization (set to 2 for spin-polarized calculation)
+!MAGMOM = 90*2.2 38*1.7     # Initial magnetic moments for Cu (1 for each Cu), In (1 for each In), Se (no magnetization)
+NCORE = 4                  # Number of cores per band
+LREAL = Auto               # Real-space projection for faster calculations
+ALGO = Normal              # Algorithm for electronic minimization
+# KPOINTS = Automatic      # Automatic k-point mesh (based on POSCAR size)
+
+# Optional settings for relaxation or analysis
+# Uncomment the following line for further optimization or specific analysis
+# LCHARG = .TRUE.           # Write charge density file (useful for charge density analysis)
+# LWAVE = .TRUE.            # Write WAVECAR file (useful for restarting or analysis)
+#
+ADDGRID = .TRUE.           # better convergence, I hope!
+LASPH = .TRUE.

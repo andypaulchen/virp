@@ -1,0 +1,15 @@
+#!/bin/sh
+#PBS -N NAME
+#PBS -P 12003663
+#PBS -l select=1:ncpus=128:mpiprocs=128:ompthreads=1:mem=440gb
+#PBS -l walltime=24:00:00
+#PBS -j oe
+cd $PBS_O_WORKDIR
+export OMP_NUM_THREADS=1
+
+module swap PrgEnv-cray PrgEnv-intel
+module load mkl cray-hdf5
+module 
+
+mpirun -np 128 --cpu-bind depth -d $OMP_NUM_THREADS /home/users/ntu/andypaul/vasp65/vasp.6.5.0/bin/vasp_gam > out_sprelag
+

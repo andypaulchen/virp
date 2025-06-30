@@ -353,7 +353,7 @@ def Session(folder_path = "_disordered_cifs", mindist = None, supercell = None, 
     df = pd.DataFrame(data)
 
     # Save the DataFrame to a CSV file
-    output_file = str(Path(folder_path)/"virp_session_summary.csv")
+    output_file = "virp_session_summary.csv"
     df.to_csv(output_file, index = False)
     print(f"Results saved to {output_file}")
 
