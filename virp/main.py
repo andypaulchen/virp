@@ -203,9 +203,6 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
-        # Init CHGNET optimizer
-        if relaxer == None: relaxer = StructOptimizer()
-
         # Make output folder directory
         fname = Path(input_cif).stem
         Path(fname).mkdir(exist_ok=True)  # `exist_ok=True` avoids errors if the directory exists.
@@ -232,11 +229,17 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
             print(f"\rGenerating virtual cell #{i} ({i+1}/{sample_size})", end="", flush=True)
 
             # Relax
-            structure = Structure.from_file(pfill_file)
-            result = relaxer.relax(structure, verbose=False)
-            stropt_file_name = fname+"_virtual_"+str(i)+"_stropt.cif"
-            stropt_file = Path(stropt_path) / stropt_file_name 
-            result['final_structure'].to(stropt_file)
+            # 30 Oct 2025: If relaxer is None, don't relax! (was CHGNET)
+            if relaxer != None:
+                structure = Structure.from_file(pfill_file)
+                result = relaxer.relax(structure, verbose=False)
+                stropt_file_name = fname+"_virtual_"+str(i)+"_stropt.cif"
+                stropt_file = Path(stropt_path) / stropt_file_name 
+                result['final_structure'].to(stropt_file)
+            else:
+                print("\nNo relaxer specified; skipping structure optimization.")
+                nostropt_file = Path(stropt_path) / "no_relax"
+                nostropt_file.touch()
         
         with open(Path(fname) / "_JOBDONE", 'w') as file: pass # make an empty file signalling completion
         print("\nAll cells generated (see _JOBDONE file).")
@@ -302,8 +305,8 @@ def Session(folder_path = "_disordered_cifs", mindist = None, supercell = None, 
     session_stem = ".".join(session_name.rsplit(".", 1)[:-1])
     ordinal = 1 # for run-id
     if relaxer == None: 
-        relaxer_name = "CHGNET"
-        print("Using default relaxer: CHGNET StructOptimizer")
+        relaxer_name = "none"
+        print("No relax performed.")
     else:
         relaxer_name = relaxer.calc_name
         print("Using relaxer: ", relaxer_name)
