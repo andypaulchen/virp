@@ -121,7 +121,7 @@ def DisorderQuery(folder_path):
     # Process each CIF file with progress bar
     for cif_file in tqdm(cif_files, desc="Processing CIF files", unit="file"):
         try:
-            result = is_site_disordered(str(cif_file))
+            result = is_SiteDisordered(str(cif_file))
             results[cif_file.name] = result
             
             # Update counters silently
