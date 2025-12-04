@@ -23,6 +23,7 @@ def VirtualCellProperties(folder_path, output_csv):
     Args:
         folder_path (str): Path to folder
         output_csv (str): Path to .csv output
+        stropt (bool): Whether to evaluate structure-optimized cells only
         
     Returns:
         void
@@ -36,8 +37,7 @@ def VirtualCellProperties(folder_path, output_csv):
     # Initialize data storage
     data = []
 
-    for filename in Path(folder_path).glob("*stropt.cif"):
-        # evaluate structure-optimized cells only
+    for filename in Path(folder_path).glob("*.cif"):
         print(Path(filename).stem)
         try:
             # Load the structure

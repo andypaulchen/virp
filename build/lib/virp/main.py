@@ -297,7 +297,34 @@ def SupercellSize(input_cif, minsize = None, Supercell = None):
     return sc_size, shortest_lattice_distance
 
 
-def Session(folder_path = "_disordered_cifs", mindist = None, supercell = None, sample_size = 400, relaxer = None):
+def Session(folder_path = "", mindist = None, supercell = None, sample_size = 400, relaxer = None):
+    """
+    Given a set of disordered .cif files, create a session
+    which generates (optional: relaxes) virtual cells for each .cif file
+    
+    Args:
+        folder_path (str): where the .cif files are located
+        mindist (float): minimum tolerated distance between
+            lattice points in one direction
+        supercell [int,int,int]: multiplicity of supercell
+        sample_size (int): Number of virtual cells to generate (default is 400)
+        relaxer (StructOptimizer): relaxer object to use for structure optimization 
+            (default is None, i.e., no relax)
+        
+    Returns:
+        void
+    """
+    # If subfolder "_disordered_cifs" does not exist, create it
+    if Path("_disordered_cifs").exists() == False:
+        Path("_disordered_cifs").mkdir(exist_ok=True)
+        # Copy all .cif files from folder_path to _disordered_cifs
+        for cif_file in Path(folder_path).glob("*.cif"):
+            target_file = Path("_disordered_cifs") / cif_file.name
+            if not target_file.exists():
+                with open(cif_file, 'r', encoding="utf-8", errors="replace") as src, open(target_file, 'w', encoding="utf-8", errors="replace") as dst:
+                    dst.write(src.read())
+                print(f"Copied {cif_file} to {target_file}")
+    
     # init DataFrame to store results
     data = []
     session_name = Path.cwd().name
@@ -315,7 +342,7 @@ def Session(folder_path = "_disordered_cifs", mindist = None, supercell = None, 
     if mindist == None and supercell == None: mindist = 15.0
 
     # Loop through all .cif files in the folder
-    for filename in Path(folder_path).glob("*.cif"):
+    for filename in Path("_disordered_cifs").glob("*.cif"):
         print(f"Processing .cif file: {filename}")
 
         try:
