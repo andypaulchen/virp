@@ -13,7 +13,7 @@ from pathlib import Path
 # User Functions
 #------------------------------------------------------------------------------------------------------------
 
-def VirtualCellProperties(folder_path, output_csv):
+def VirtualCellProperties(folder_path, output_csv, bandgaps = False):
     # To add: customise the set of properties to evaluate
     """
     Given a folder filled with virtual cells, 
@@ -23,7 +23,7 @@ def VirtualCellProperties(folder_path, output_csv):
     Args:
         folder_path (str): Path to folder
         output_csv (str): Path to .csv output
-        stropt (bool): Whether to evaluate structure-optimized cells only
+        bandgaps (bool): Whether to calculate bandgaps
         
     Returns:
         void
@@ -50,22 +50,29 @@ def VirtualCellProperties(folder_path, output_csv):
             density = float(structure.density)
 
             # Predict band gaps for different methods
-            bandgaps = {}
-            for i, method in ((0, "PBE"), (1, "GLLB-SC"), (2, "HSE"), (3, "SCAN")):
-                graph_attrs = torch.tensor([i])
-                bandgap = bandgap_model.predict_structure(structure=structure, state_attr=graph_attrs)
-                bandgaps[method] = float(bandgap)
-            
-            # Append results to data
-            data.append({
-                "File": Path(filename).stem,
-                "Total Energy (eV)": total_energy,
-                "Density": density,
-                "PBE Bandgap (eV)": bandgaps["PBE"],
-                "GLLB-SC Bandgap (eV)": bandgaps["GLLB-SC"],
-                "HSE Bandgap (eV)": bandgaps["HSE"],
-                "SCAN Bandgap (eV)": bandgaps["SCAN"],
-            })
+            if bandgaps == True:
+                bandgaps = {}
+                for i, method in ((0, "PBE"), (1, "GLLB-SC"), (2, "HSE"), (3, "SCAN")):
+                    graph_attrs = torch.tensor([i])
+                    bandgap = bandgap_model.predict_structure(structure=structure, state_attr=graph_attrs)
+                    bandgaps[method] = float(bandgap)
+                # Append results to data
+                data.append({
+                    "File": Path(filename).stem,
+                    "Total Energy (eV)": total_energy,
+                    "Density": density,
+                    "PBE Bandgap (eV)": bandgaps["PBE"],
+                    "GLLB-SC Bandgap (eV)": bandgaps["GLLB-SC"],
+                    "HSE Bandgap (eV)": bandgaps["HSE"],
+                    "SCAN Bandgap (eV)": bandgaps["SCAN"],
+                })
+            else:        
+                # Append results to data
+                data.append({
+                    "File": Path(filename).stem,
+                    "Total Energy (eV)": total_energy,
+                    "Density": density,
+                })
             
             print(f"Processed: {filename}")
         
@@ -74,7 +81,10 @@ def VirtualCellProperties(folder_path, output_csv):
     
     # Write results to CSV
     with open(output_csv, mode='w', newline='') as csvfile:
-        fieldnames = ["File", "Total Energy (eV)", "Density", "PBE Bandgap (eV)", "GLLB-SC Bandgap (eV)", "HSE Bandgap (eV)", "SCAN Bandgap (eV)"]
+        if bandgaps == True:
+            fieldnames = ["File", "Total Energy (eV)", "Density", "PBE Bandgap (eV)", "GLLB-SC Bandgap (eV)", "HSE Bandgap (eV)", "SCAN Bandgap (eV)"]
+        else:
+            fieldnames = ["File", "Total Energy (eV)", "Density"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         
         writer.writeheader()

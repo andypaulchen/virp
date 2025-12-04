@@ -28,8 +28,6 @@ def VirtualCellProperties(folder_path, output_csv, bandgaps = False):
     Returns:
         void
     """
-    # Load the MEGNet band gap model
-    bandgap_model = matgl.load_model("MEGNet-MP-2019.4.1-BandGap-mfi")
     
     # Load the CHGNet model for total energy prediction
     chgnet = CHGNet.load()
@@ -51,6 +49,9 @@ def VirtualCellProperties(folder_path, output_csv, bandgaps = False):
 
             # Predict band gaps for different methods
             if bandgaps == True:
+                # Load the MEGNet band gap model
+                bandgap_model = matgl.load_model("MEGNet-MP-2019.4.1-BandGap-mfi")
+                
                 bandgaps = {}
                 for i, method in ((0, "PBE"), (1, "GLLB-SC"), (2, "HSE"), (3, "SCAN")):
                     graph_attrs = torch.tensor([i])
