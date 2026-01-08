@@ -331,6 +331,8 @@ def Session(folder_path = "", mindist = None, supercell = None, sample_size = 40
     # for run-id
     session_stem = ".".join(session_name.rsplit(".", 1)[:-1])
     ordinal = 1 # for run-id
+
+    # Default relaxer is None (no relax)
     if relaxer == None: 
         relaxer_name = "none"
         print("No relax performed.")
@@ -402,9 +404,14 @@ def SessionICSD(csv_path, qrange = None, mindist = None, supercell = None, sampl
     # for run-id
     session_stem = ".".join(session_name.rsplit(".", 1)[:-1])
     ordinal = 1 # for run-id
+
+    # Default relaxer is None (no relax)
     if relaxer == None: 
-        relaxer = StructOptimizer()
-        relaxer_name = "CHGNET"
+        relaxer_name = "none"
+        print("No relax performed.")
+    else:
+        relaxer_name = relaxer.calc_name
+        print("Using relaxer: ", relaxer_name)
 
     # Default mindist is 15 Angstroms
     if mindist == None and supercell == None: mindist = 15.0
