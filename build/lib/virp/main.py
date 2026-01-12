@@ -417,8 +417,7 @@ def SessionICSD(csv_path, qrange = None, mindist = None, supercell = None, sampl
     if mindist == None and supercell == None: mindist = 15.0
 
     # Loop through all .cif files in the folder
-    for entry in qrange:
-        entry = int(entry)
+    for entry in range(qrange):
         print("Processing entry #",entry)
         try:
             # write structure to temporary cif path
