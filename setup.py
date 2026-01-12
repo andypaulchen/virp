@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="virp",
-    version="1.4.4",
+    version="1.4.5",
     packages=find_packages(),
     install_requires=[
         "pymatgen",
