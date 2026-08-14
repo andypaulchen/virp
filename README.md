@@ -13,7 +13,8 @@
  ## Installation
  <b>Install github instance: </b>`pip install git+https://github.com/andypaulchen/virp.git`<br>
  Update to latest release: uninstall and re-install<br>
- <b>Install PyPI release: </b> `pip install virp`
+ <b>Install PyPI release: </b> `pip install virp`<br>
+ <b>Recommended Python version: </b> 3.12<br>
 
  ## Building a database
  The root directory has a folder (`session`) which holds the python scripts which build a library of virtual cells (`generate.py`) and postprocessing scripts (`connectivity.py` and `properties.py`). After each script is run, the results are saved as `.csv` files.

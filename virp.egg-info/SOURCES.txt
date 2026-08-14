@@ -3,11 +3,12 @@ README.md
 pyproject.toml
 setup.py
 virp/__init__.py
-virp/connect.py
+virp/correlated.py
 virp/database.py
 virp/enumerate.py
 virp/main.py
 virp/matprop.py
+virp/motifs.py
 virp/relax.py
 virp.egg-info/PKG-INFO
 virp.egg-info/SOURCES.txt

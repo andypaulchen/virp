@@ -10,8 +10,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 
+# ==============================================================
 # User Functions
-#------------------------------------------------------------------------------------------------------------
+# ==============================================================
 
 def VirtualCellProperties(folder_path, output_csv, bandgaps = False):
     # To add: customise the set of properties to evaluate
