@@ -1,3 +1,5 @@
+# Example: Generate a database entry from disordered cells (and optionally, relax them)
+
 from virp import Session, ML_Relaxer
 import warnings
 import sys

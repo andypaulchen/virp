@@ -1,3 +1,5 @@
+# Example: calculation and statistics of materials properties
+
 from virp.matprop import VirtualCellProperties
 from pathlib import Path
 import warnings
