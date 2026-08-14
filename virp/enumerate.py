@@ -6,8 +6,9 @@ import numpy as np
 import pandas as pd
 import re
 
+# ==============================================================
 # Ancillary Functions
-#------------------------------------------------------------------------------------------------------------
+# ==============================================================
 
 def format_integer(num, prec = 6):
     return np.format_float_scientific(num, precision=prec) if num >= 10**prec else str(num)
@@ -109,8 +110,9 @@ def get_site_combination(edit_block, edit_name):
     return combinations
 
 
+# ==============================================================
 # User Functions
-#------------------------------------------------------------------------------------------------------------
+# ==============================================================
 
 def Enumerate(input_file):
     # Given a SUPERCELL .cif structure, return total possible virtual cells,

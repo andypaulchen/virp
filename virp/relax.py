@@ -1,4 +1,3 @@
-from ase.constraints import ExpCellFilter
 from ase.filters import Filter, FrechetCellFilter
 from ase.optimize.bfgs import BFGS
 from ase.optimize.bfgslinesearch import BFGSLineSearch
@@ -7,12 +6,10 @@ from ase.optimize.lbfgs import LBFGS, LBFGSLineSearch
 from ase.optimize.mdmin import MDMin
 from ase.optimize.sciopt import SciPyFminBFGS, SciPyFminCG
 from ase import Atoms #, units
-#from ase.calculators.calculator import Calculator
 from pymatgen.core.structure import Structure # Molecule
 from pymatgen.io.ase import AseAtomsAdaptor
 from ase.optimize.optimize import Optimizer
 import torch
-#from pathlib import Path
 
 
 OPTIMIZERS = {

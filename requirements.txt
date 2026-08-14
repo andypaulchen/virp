@@ -2,4 +2,6 @@ pymatgen
 chgnet
 matgl==1.0.0
 dgl
-poshcar
+scikit-learn
+shap
+ortools

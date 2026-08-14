@@ -1,3 +1,10 @@
+"""
+[DEPRECATED] Connectivity Analysis Module
+
+This module has been superseded by the virp.correlated module 
+As such, poshcar is no longer required for virp installation
+"""
+
 from poshcar.disorder import VirtualLibrary, cif2vasp_occ
 from sklearn.linear_model import LinearRegression
 from pymatgen.core.structure import Structure
@@ -7,16 +14,18 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
+# ==============================================================
 # Ancillary Functions
-#------------------------------------------------------------------------------------------------------------
+# ==============================================================
 
 # Function to format chemical formula with subscripts
 def format_formula(formula):
     return ''.join([f'{char}' if not char.isdigit() else f'$_{{{char}}}$' for char in formula])
 
 
+# ==============================================================
 # User Functions
-#------------------------------------------------------------------------------------------------------------
+# ==============================================================
 
 def ConnectivityAnalysis(folder_path = "_disordered_cifs"):
     # Generates connectivity analysis
@@ -79,7 +88,6 @@ def ConnectivityAnalysis(folder_path = "_disordered_cifs"):
                 # Save the plot as a .png file
                 plt.savefig(branch_path / "scatterplot.png", dpi=300, bbox_inches='tight')
                 plt.close()
-
 
 
 def ConnectivityQuery(run_path, output_file="connectivity_analysis.png"):

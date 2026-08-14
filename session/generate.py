@@ -9,10 +9,10 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
 
     # Initialize the ML_Relaxer
-    mlrelaxer = ML_Relaxer(calc_name="mace_omat", calc_paths=None, optimizer="LBFGSLineSearch", relax_cell=True)
+    #mlrelaxer = ML_Relaxer(calc_name="mace_omat", calc_paths=None, optimizer="LBFGSLineSearch", relax_cell=True)
 
     # Default Settings
-    Session(relaxer=mlrelaxer)
+    Session()
 
     # Custom Settings (for testing)
-    #Session(folder_path = "_disordered_cifs", relaxer=mlrelaxer, mindist = 10, sample_size = 2)
+    #Session(folder_path = "", min_length=15.0, max_atoms=1000, length_floor=3.0, sample_size=400, relaxer = None)

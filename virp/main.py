@@ -2,19 +2,20 @@
 
 # External Imports
 from pymatgen.core.structure import Structure
-from chgnet.model import StructOptimizer
+from pymatgen.transformations.advanced_transformations import CubicSupercellTransformation
 
 from pathlib import Path
 import numpy as np
 import pandas as pd
-import itertools
+from itertools import product
 import warnings
 import random
 import math
 import re
 
+# ==============================================================
 # Ancillary Functions
-#------------------------------------------------------------------------------------------------------------
+# ==============================================================
 
 def round_with_tie_breaker(n):
     # Separate the fractional and integer parts
@@ -87,28 +88,96 @@ def ShuffleOccupiedSites (outfile, edit_block, edit_name, verbose = True):
     for writeline in edit_block: outfile.write(writeline)
 
 
+def ImportICSD(csv_path, qrange = None):
+    # Update: this function now moves .cif files from CSV into "_disordered_cifs" 
+    # instead of building the database
+    
+    # Make _disordered_cifs path if not already existing
+    Path("_disordered_cifs").mkdir(exist_ok=True)
+
+    # Import CSV database
+    db_dis = pd.read_csv(csv_path)
+    if qrange == None: qrange = len(db_dis) # if unspecified, process all entries
+
+    # Loop through all .cif files in the folder
+    for entry in range(qrange):
+        print("Processing entry #",entry)
+        try:
+            # write structure to temporary cif path
+            with open("temp.cif", "w", encoding="utf-8", errors="replace") as f:
+                f.write(db_dis['cif'].iloc[entry])
+
+            #Extract metadata: chemical formula
+            structure = Structure.from_file("temp.cif")
+            formula = structure.composition.reduced_formula
+            elements = [str(el.symbol) for el in structure.composition.elements]
+
+            filename = str(db_dis['CollectionCode'].iloc[entry])+"_"+formula+".cif"
+            Path("temp.cif").rename(Path("_disordered_cifs") / filename)
+            print(f"Writing to .cif file: {filename}")
+
+        except Exception as e:
+            print(f"Error processing Entry #{entry}: {e}")
+
+
+# ==============================================================
 # User Functions
-#------------------------------------------------------------------------------------------------------------
+# ==============================================================
 
-def CIFSupercell (inputcif, outputcif, supercellsize, verbose = True):
+def Supercell(inputcif, outputcif, min_length=15.0, max_atoms=1000, length_floor=3.0, verbose=True):
     # inputcif, outputcif: path to cif file
-    # supercellsize: vector of 3 integers
-
-    # Load the structure from a CIF file
+    # min_length: minimum length (Angstrom) of the supercell's inscribed cube/box
+    # max_atoms: cap on resulting supercell size
+    # length_floor: don't shrink min_length below this (Angstrom), avoids infinite/degenerate search
+    
+    # --- Input: read structure from CIF ---
     structure = Structure.from_file(inputcif)
 
-    # Define the scaling matrix for the supercell
-    # For example, [2, 0, 0], [0, 2, 0], [0, 0, 2] creates a 2x2x2 supercell
-    scaling_matrix = [[supercellsize[0], 0, 0], 
-                      [0, supercellsize[1], 0], 
-                      [0, 0, supercellsize[2]]]
+    if verbose:
+        print("Original lattice:")
+        print(structure.lattice)
+        print("Original angles (alpha, beta, gamma):", structure.lattice.angles)
+        print("Number of atoms:", len(structure))
+    
+    # --- Apply transformation, rebuilding cst each iteration ---
+    ortho_structure = None
+    no_atoms = max_atoms + 1
+    while (min_length >= length_floor) and (no_atoms > max_atoms):
+        cst = CubicSupercellTransformation(min_length=min_length, force_90_degrees=False)
+        # --- Apply transformation ---
+        if verbose: print(f"\nTransforming with minimum length {min_length} Angstroms...")
+        ortho_structure = cst.apply_transformation(structure)
+        no_atoms = len(ortho_structure)
+        if no_atoms > max_atoms:
+            print(f"Supercell has {no_atoms} atoms... reducing minimum length to {min_length - 1.0}")
+            min_length -= 1.0
+            if min_length < length_floor: 
+                print("\nError: minimum length below floor")
+                return
 
-    # Create the supercell
-    structure.make_supercell(scaling_matrix)
+    # Calclate actual min distance of lattice
+    lattice = ortho_structure.lattice
+    min_dist_actual = min(
+        np.linalg.norm(lattice.get_cartesian_coords(v))
+        for v in product([-1, 0, 1], repeat=3)
+        if v != (0, 0, 0)
+    )
+    
+    if verbose:
+        print("\nOrthogonalized lattice:")
+        print(ortho_structure.lattice)
+        print("Orthogonalized angles:", ortho_structure.lattice.angles)
+        print("Minimum distance (prescribed/actual):", min_length, " / ", min_dist_actual)
+        print("Number of atoms:", len(ortho_structure))
+        # You can also inspect the transformation matrix that was used
+        print("\nTransformation matrix:")
+        print(cst.transformation_matrix)
+    
+    # --- Output: write orthogonalized structure ---
+    ortho_structure.to(filename=outputcif)
+    if verbose: print("\nSupercell created and saved as", outputcif)
 
-    # Save the supercell to a new CIF file (optional)
-    structure.to(fmt="cif", filename=outputcif)
-    if verbose: print("Supercell created and saved as ", outputcif)
+    return min_length, min_dist_actual, cst.transformation_matrix
 
 
 def PermutativeFill(input_file, output_file, verbose = True):
@@ -133,7 +202,7 @@ def PermutativeFill(input_file, output_file, verbose = True):
             
             if match: # we have reached the coordinate block of the .cif file
                 # Extract the site name and last number from the match
-                second_string = match.group(1)  # This will give you 'Ca1'
+                second_string = re.sub(r'_\d+$', '', match.group(1))  # This will give you 'Ca1'
                 last_number = float(match.group(2)) # The last number
     
                 # Decision block
@@ -185,16 +254,19 @@ def PermutativeFill(input_file, output_file, verbose = True):
     with open(input_file, 'w') as outfile: outfile.writelines(lines)  # Write back without "#EOF"
 
 
-def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
+def MakeVirtualCells(input_cif, min_length=15.0, max_atoms=1000, length_floor=3.0, sample_size=400, relaxer = None):
     """
     Given a disordered .cif file, create an output folder
     containing a number (sample_size) of virtual cells
     
     Args:
         input_cif (str): Path to .cif (disordered)
-        supercell [int,int,int]: multiplicity of supercell
+        min_length (float): Minimum tolerated distance between lattice points in one direction
+        max_atoms (int): Maximum number of atoms allowed in the supercell
+        length_floor (float): Minimum length for each lattice vector
         sample_size (int): Number of virtual cells to generate (default is 400)
-        
+        relaxer (Relaxer): The relaxer to use for structure optimization (default is None)
+
     Returns:
         void
     """
@@ -212,7 +284,7 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
         sc_file = str(header) + "_supercell.cif"
 
         # Make the supercell
-        CIFSupercell(input_cif, sc_file, supercell)
+        min_dist_prescribed, min_dist_actual, sc_matrix = Supercell(input_cif, sc_file, min_length=min_length, max_atoms=max_atoms, length_floor=length_floor)
 
         # Create target folders if they don't exist
         stropt_path = Path(fname) / "stropt"
@@ -225,6 +297,7 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
             # Permutative fill only, no structure optimization
             pfill_file_name = fname+"_virtual_"+str(i)+".cif"
             pfill_file = Path(no_stropt_path) / pfill_file_name
+            print(str(sc_file), str(pfill_file))
             PermutativeFill(sc_file, pfill_file, verbose = True if i == 0 else False)
             print(f"\rGenerating virtual cell #{i} ({i+1}/{sample_size})", end="", flush=True)
 
@@ -244,60 +317,10 @@ def SampleVirtualCells(input_cif, supercell, sample_size=400, relaxer = None):
         with open(Path(fname) / "_JOBDONE", 'w') as file: pass # make an empty file signalling completion
         print("\nAll cells generated (see _JOBDONE file).")
 
-
-def SupercellSize(input_cif, minsize = None, Supercell = None):
-    """
-    Given a disordered .cif file, decide how big the
-    supercell should be (works best for orthogonal cifs)
-    
-    Args:
-        input_cif (str): Path to .cif (disordered)
-        minsize (float): minimum tolerated distance between
-            lattice points in one direction
-
-    Returns:
-        array of 3 integers denoting supercell multiplicity
-    """
-    # Default minsize is 15 Angstroms
-    if minsize == None and Supercell == None: minsize = 15.0
-    
-    # init sc_size array, warning
-    if Supercell == None: sc_size = [1,1,1]
-    else: sc_size = Supercell
-
-    # Load the .cif file
-    structure = Structure.from_file(input_cif)
-
-    # Get the lattice vectors
-    lattice = structure.lattice
-    new_lattice = []
-
-    # Execution
-    for i in range(3):
-        uc_length = np.linalg.norm(lattice.matrix[i])
-        if Supercell == None: sc_size[i] = math.ceil(minsize/uc_length)
-        new_lattice.append(lattice.matrix[i]*sc_size[i])
-
-    # Generate all lattice points for one unit cell
-    lattice_points = [np.dot([i, j, k], new_lattice) for i, j, k in itertools.product([0, 1], repeat=3)]
-    # Calculate all pairwise distances
-    distances = []
-    for i, p1 in enumerate(lattice_points):
-        for j, p2 in enumerate(lattice_points):
-            if i < j:  # Avoid duplicate pairs
-                distances.append(np.linalg.norm(p1 - p2))
-
-    # Find the shortest distance
-    shortest_lattice_distance = min(distances)
-
-    # Check if shortest distance between lattice points is under minsize
-    print(f"The shortest distance between lattice points is: {shortest_lattice_distance:.5f} Å")
-    print(f"Supercell multiplicity: {sc_size}")
-
-    return sc_size, shortest_lattice_distance
+        return min_dist_prescribed, min_dist_actual, sc_matrix
 
 
-def Session(folder_path = "", mindist = None, supercell = None, sample_size = 400, relaxer = None):
+def Session(folder_path = "", min_length=15.0, max_atoms=1000, length_floor=3.0, sample_size=400, relaxer = None):
     """
     Given a set of disordered .cif files, create a session
     which generates (optional: relaxes) virtual cells for each .cif file
@@ -340,20 +363,13 @@ def Session(folder_path = "", mindist = None, supercell = None, sample_size = 40
         relaxer_name = relaxer.calc_name
         print("Using relaxer: ", relaxer_name)
 
-    # Default mindist is 15 Angstroms
-    if mindist == None and supercell == None: mindist = 15.0
-
     # Loop through all .cif files in the folder
     for filename in Path("_disordered_cifs").glob("*.cif"):
         print(f"Processing .cif file: {filename}")
 
         try:
-            # Calculate preferred supercell size
-            sc_size, shortest_lattice_distance = SupercellSize(filename, minsize=mindist, Supercell=supercell)
-            if mindist == None: mindist = shortest_lattice_distance
-
             # Generate virtual cell samples
-            SampleVirtualCells(filename, sc_size, sample_size=sample_size, relaxer=relaxer)
+            min_dist_prescribed, min_dist_actual, sc_matrix = MakeVirtualCells(filename, min_length=min_length, max_atoms=max_atoms, length_floor=length_floor, sample_size=sample_size, relaxer = None)
 
             # Extract metadata: chemical formula
             structure = Structure.from_file(filename)
@@ -367,9 +383,9 @@ def Session(folder_path = "", mindist = None, supercell = None, sample_size = 40
                 "filename": Path(filename).stem,
                 "formula": formula,
                 "elements": elements,
-                "supercell size": sc_size,
-                "image distance (target)": float(mindist),
-                "image distance (actual)": shortest_lattice_distance,
+                "supercell size": sc_matrix,
+                "image distance (target)": float(min_dist_prescribed),
+                "image distance (actual)": float(min_dist_actual),
                 "sample size": sample_size,
                 "relaxer": relaxer_name,
                 "connectivity_done": False,
@@ -380,87 +396,6 @@ def Session(folder_path = "", mindist = None, supercell = None, sample_size = 40
 
         except Exception as e:
             print(f"Error processing {filename}: {e}")
-
-    # Create a DataFrame
-    df = pd.DataFrame(data)
-
-    # Save the DataFrame to a CSV file
-    output_file = "virp_session_summary.csv"
-    df.to_csv(output_file, index = False)
-    print(f"Results saved to {output_file}")
-
-
-def SessionICSD(csv_path, qrange = None, mindist = None, supercell = None, sample_size = 400, relaxer = None):
-    # Make _disordered_cifs path if not already existing
-    Path("_disordered_cifs").mkdir(exist_ok=True)
-
-    # Import CSV database
-    db_dis = pd.read_csv(csv_path)
-    if qrange == None: qrange = len(db_dis) # if unspecified, process all entries
-
-    # init DataFrame to store results
-    data = []
-    session_name = Path.cwd().name
-    # for run-id
-    session_stem = ".".join(session_name.rsplit(".", 1)[:-1])
-    ordinal = 1 # for run-id
-
-    # Default relaxer is None (no relax)
-    if relaxer == None: 
-        relaxer_name = "none"
-        print("No relax performed.")
-    else:
-        relaxer_name = relaxer.calc_name
-        print("Using relaxer: ", relaxer_name)
-
-    # Default mindist is 15 Angstroms
-    if mindist == None and supercell == None: mindist = 15.0
-
-    # Loop through all .cif files in the folder
-    for entry in range(qrange):
-        print("Processing entry #",entry)
-        try:
-            # write structure to temporary cif path
-            with open("temp.cif", "w", encoding="utf-8", errors="replace") as f:
-                f.write(db_dis['cif'].iloc[entry])
-
-            #Extract metadata: chemical formula
-            structure = Structure.from_file("temp.cif")
-            formula = structure.composition.reduced_formula
-            elements = [str(el.symbol) for el in structure.composition.elements]
-
-            filename = str(db_dis['CollectionCode'].iloc[entry])+"_"+formula+".cif"
-            Path("temp.cif").rename(Path("_disordered_cifs") / filename)
-            print(f"Writing to .cif file: {filename}")
-
-            # Calculate preferred supercell size
-            sc_size, shortest_lattice_distance = SupercellSize(Path("_disordered_cifs") / filename, minsize=mindist, Supercell=supercell)
-            if mindist == None: mindist = shortest_lattice_distance
-
-            # Generate virtual cell samples
-            SampleVirtualCells(Path("_disordered_cifs") / filename, sc_size, sample_size=sample_size, relaxer=relaxer)
-
-           
-            # Append results to the data list
-            data.append({
-                "session": session_name,
-                "run_id": f"{session_stem}.{ordinal}",
-                "filename": Path(filename).stem,
-                "formula": formula,
-                "elements": elements,
-                "supercell size": sc_size,
-                "image distance (target)": float(mindist),
-                "image distance (actual)": shortest_lattice_distance,
-                "sample size": sample_size,
-                "relaxer": relaxer_name,
-                "connectivity_done": False,
-                "properties_done": False,
-                "provenance": "ICSD"
-            })
-            ordinal +=1
-
-        except Exception as e:
-            print(f"Error processing Entry #{entry}: {e}")
 
     # Create a DataFrame
     df = pd.DataFrame(data)

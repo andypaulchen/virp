@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "virp"
-version = "1.4.5"
+version = "2.0.0"
 description = "VIRtual cell generation by Permutation"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -16,7 +16,9 @@ dependencies = [
     "chgnet",
     "matgl==1.0.0",
     "dgl",
-    "poshcar>=2.0.2"
+    "scikit-learn",
+    "shap",
+    "ortools",
 ]
 keywords = [
     "disordered", 
