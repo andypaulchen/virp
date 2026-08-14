@@ -5,3 +5,4 @@ dgl
 scikit-learn
 shap
 ortools
+mace-torch

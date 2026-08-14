@@ -12,5 +12,6 @@ setup(
         "scikit-learn",
         "shap",
         "ortools",
+        "mace-torch"
     ],
 )

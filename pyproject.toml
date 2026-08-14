@@ -19,6 +19,7 @@ dependencies = [
     "scikit-learn",
     "shap",
     "ortools",
+    "mace-torch",
 ]
 keywords = [
     "disordered", 
