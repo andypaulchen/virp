@@ -10,6 +10,7 @@ virp/main.py
 virp/matprop.py
 virp/motifs.py
 virp/relax.py
+virp/visualise.py
 virp.egg-info/PKG-INFO
 virp.egg-info/SOURCES.txt
 virp.egg-info/dependency_links.txt

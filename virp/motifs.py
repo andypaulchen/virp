@@ -39,10 +39,35 @@ from tqdm.auto import tqdm
 # User Functions (motifs)
 # ==============================================================
 
-def motifs(cif_path: str, geometry_analysis: bool = False) -> pd.DataFrame:
-    """Build a per-site neighbor-species count table ("cliqueration") for one CIF."""
+def motifs(
+    cif_path: str,
+    geometry_analysis: bool = False,
+    x_diff_weight: float = 0.0,
+) -> pd.DataFrame:
+    """Build a per-site neighbor-species count table ("cliqueration") for one CIF.
+
+    x_diff_weight is passed straight through to CrystalNN. It's a "prefer
+    opposites" dial for picking each atom's neighbors: turned up, CrystalNN
+    favors bonds between different elements (e.g. O-H) over bonds between
+    the same element (e.g. H-H), even when the same-element atom is
+    geometrically closer -- strongly enough that a same-element contact
+    can be the single largest raw Voronoi neighbor and still get pushed
+    out of the reported coordination shell entirely.
+
+    Default here is 0: neighbors are picked by distance/geometry alone,
+    whatever the elements involved -- what this module characterizes is
+    the cell as generated (random fills, defects, and all), not an
+    idealized chemical picture of it. That's also pymatgen's own
+    documented setting for "pure geometric matching, disregarding atomic
+    identity."
+
+    pymatgen's own default is 3.0, tuned for identifying "chemically
+    sensible" bonding motifs in ordered, relaxed inorganic crystals --
+    pass x_diff_weight=3.0 (or elsewhere in that range) if that's what a
+    given analysis calls for instead.
+    """
     structure = Structure.from_file(cif_path)
-    cnn = CrystalNN()
+    cnn = CrystalNN(x_diff_weight=x_diff_weight)
 
     # Ordinal labels per species, e.g. Zn1, Zn2, ..., V1, ..., O1, ...
     species_counter = {}
@@ -108,11 +133,19 @@ def motifs_census_folder(
     folder_path: str,
     use_proportion: bool = True,
     out_csv: Optional[str] = "motifs_census.csv",
+    x_diff_weight: float = 0.0,
 ) -> pd.DataFrame:
     """
     Run motifs() + motifs_census() over every CIF in a folder and assemble a
     wide (structures x motif types) table, keyed by structure name
     ("file_name") to line up with mace_energies_to_csv()'s "Name" column.
+
+    x_diff_weight is forwarded to motifs() -> CrystalNN (see motifs()'
+    docstring). Default is 0 (pure distance-based neighbors), so
+    same-element contacts -- e.g. H-H clashes -- show up in the census
+    instead of being silently outranked by chemically-favored neighbors.
+    Pass x_diff_weight=3.0 to restore pymatgen's chemically-weighted
+    default for analyses that specifically want idealized bonding motifs.
 
     Saves to out_csv (pass None to skip writing) and always returns the
     DataFrame, so it can be used standalone or piped straight into
@@ -125,7 +158,7 @@ def motifs_census_folder(
     rows = {}
     for cif_path in tqdm(cif_paths, desc="Analyzing CIFs"):
         file_name = os.path.splitext(os.path.basename(cif_path))[0]
-        cliqueration = motifs(cif_path)
+        cliqueration = motifs(cif_path, x_diff_weight=x_diff_weight)
         census = motifs_census(cliqueration)
         rows[file_name] = census.set_index("clique_type")[value_col]
 
@@ -156,7 +189,7 @@ def load_mace_calculator(model: str = "MACE-matpes-r2scan-omat-ft.model", device
 
 def mace_energy_from_cif(cif: str, calc = None) -> float:
     """Compute the MACE-predicted potential energy for a single CIF structure."""
-    if calc == None: 
+    if calc == None:
         calc = mace_mp(model="MACE-matpes-r2scan-omat-ft.model", device="cpu")
     atoms: Atoms = read(cif)  # ASE reads CIF directly
     atoms.calc = calc
@@ -174,9 +207,9 @@ def mace_energies_to_csv(
     column. Saves to out_csv (pass None to skip writing) and always returns
     the DataFrame.
     """
-    if calc == None: 
+    if calc == None:
         calc = mace_mp(model="MACE-matpes-r2scan-omat-ft.model", device="cpu")
-        
+
     cif_files = sorted(Path(folder_path).glob("*.cif"))
     results = []
     for cif_file in tqdm(cif_files, desc="Calculating MACE", unit="cif"):

@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: virp
-Version: 2.0.0
+Version: 2.0.1
 Summary: VIRtual cell generation by Permutation
 Author-email: Andy Paul Chen <la.vache.qui.vit@gmail.com>
 License: MIT License
@@ -38,6 +38,7 @@ Requires-Dist: dgl
 Requires-Dist: scikit-learn
 Requires-Dist: shap
 Requires-Dist: ortools
+Requires-Dist: mace-torch
 Dynamic: license-file
 
 <img src="graphics/virpbanner.png" width="870">
@@ -55,7 +56,8 @@ Dynamic: license-file
  ## Installation
  <b>Install github instance: </b>`pip install git+https://github.com/andypaulchen/virp.git`<br>
  Update to latest release: uninstall and re-install<br>
- <b>Install PyPI release: </b> `pip install virp`
+ <b>Install PyPI release: </b> `pip install virp`<br>
+ <b>Recommended Python version: </b> 3.12<br>
 
  ## Building a database
  The root directory has a folder (`session`) which holds the python scripts which build a library of virtual cells (`generate.py`) and postprocessing scripts (`connectivity.py` and `properties.py`). After each script is run, the results are saved as `.csv` files.
