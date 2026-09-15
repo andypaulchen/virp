@@ -44,7 +44,7 @@ def motifs(
     geometry_analysis: bool = False,
     x_diff_weight: float = 0.0,
 ) -> pd.DataFrame:
-    """Build a per-site neighbor-species count table ("cliqueration") for one CIF.
+    """Build a per-site neighbor-species count table for one CIF.
 
     x_diff_weight is passed straight through to CrystalNN. It's a "prefer
     opposites" dial for picking each atom's neighbors: turned up, CrystalNN
@@ -55,11 +55,7 @@ def motifs(
     out of the reported coordination shell entirely.
 
     Default here is 0: neighbors are picked by distance/geometry alone,
-    whatever the elements involved -- what this module characterizes is
-    the cell as generated (random fills, defects, and all), not an
-    idealized chemical picture of it. That's also pymatgen's own
-    documented setting for "pure geometric matching, disregarding atomic
-    identity."
+    whatever the elements involved.
 
     pymatgen's own default is 3.0, tuned for identifying "chemically
     sensible" bonding motifs in ordered, relaxed inorganic crystals --

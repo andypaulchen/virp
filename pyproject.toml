@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "virp"
-version = "2.0.1"
+version = "2.0.2"
 description = "VIRtual cell generation by Permutation"
 readme = "README.md"
 license = {file = "LICENSE"}

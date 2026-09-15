@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025, Kedar Hippalgaonkar's Materials by Design Lab
+# Copyright (c) 2024-2026, Kedar Hippalgaonkar's Materials by Design Lab
 # Distributed under the terms of the MIT License.
 
 """
@@ -10,7 +10,7 @@ from .enumerate import *
 from .relax import *
 
 __copyright__  = "Kedar Hippalgaonkar's Materials by Design Lab"
-__version__    =  "2.0.1"
+__version__    =  "2.0.2"
 __maintainer__ = "Andy Paul Chen"
 __email__      = "la.vache.qui.vit@gmail.com"
 __status__     = "Development"
