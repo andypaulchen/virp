@@ -547,12 +547,21 @@ def _plot_disorder_group_pies(
     atoms.set_tags(list(range(len(indices))))
     atoms.info["occupancy"] = occ_dicts
 
+    max_dist = max(
+        np.linalg.norm(np.array(positions[a]) - np.array(positions[b]))
+        for a in range(len(positions)) for b in range(a + 1, len(positions))
+    )
+
     fig, ax = plt.subplots(figsize=(5, 5))
     # Background is light grey, not white, so the white "vacancy" wedge
     # ASE draws for a partially-occupied site stays visible against it.
     fig.patch.set_facecolor("#e8e8e8")
-    plot_atoms(atoms, ax, radii=0.45, rotation=rotation)
+    plot_atoms(atoms, ax, radii=0.315, rotation=rotation)  # 0.45 * 0.7
     ax.set_title(title, fontsize=14)
+    ax.text(
+        0.5, -0.06, f"Longest pairwise distance: {max_dist:.3f} Å",
+        transform=ax.transAxes, ha="center", fontsize=11,
+    )
     plt.tight_layout()
     plt.savefig(out_path, facecolor=fig.get_facecolor(), **SAVE_KWARGS)
     plt.close()
