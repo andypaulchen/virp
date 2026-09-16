@@ -1,11 +1,11 @@
 Metadata-Version: 2.4
 Name: virp
-Version: 2.0.1
+Version: 2.0.2
 Summary: VIRtual cell generation by Permutation
 Author-email: Andy Paul Chen <la.vache.qui.vit@gmail.com>
 License: MIT License
         
-        Copyright (c) 2024-2025 Kedar Hippalgaonkar's Materials by Design Lab
+        Copyright (c) 2024-2026 Kedar Hippalgaonkar's Materials by Design Lab
         
         Permission is hereby granted, free of charge, to any person obtaining a copy
         of this software and associated documentation files (the "Software"), to deal
