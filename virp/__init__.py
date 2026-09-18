@@ -10,7 +10,7 @@ from .enumerate import *
 from .relax import *
 
 __copyright__  = "Kedar Hippalgaonkar's Materials by Design Lab"
-__version__    =  "2.1.0"
+__version__    =  "2.2.0"
 __maintainer__ = "Andy Paul Chen"
 __email__      = "la.vache.qui.vit@gmail.com"
 __status__     = "Development"

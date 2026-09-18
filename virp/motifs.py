@@ -128,6 +128,7 @@ def motifs_census(cliqueration: pd.DataFrame) -> pd.DataFrame:
 def motifs_census_folder(
     folder_path: str,
     use_proportion: bool = True,
+    geometry_analysis: bool = False,
     out_csv: Optional[str] = "motifs_census.csv",
     x_diff_weight: float = 0.0,
 ) -> pd.DataFrame:
@@ -155,7 +156,7 @@ def motifs_census_folder(
     for cif_path in tqdm(cif_paths, desc="Analyzing CIFs"):
         file_name = os.path.splitext(os.path.basename(cif_path))[0]
         cliqueration = motifs(cif_path, x_diff_weight=x_diff_weight)
-        census = motifs_census(cliqueration)
+        census = motifs_census(cliqueration, geometry_analysis=geometry_analysis)
         rows[file_name] = census.set_index("clique_type")[value_col]
 
     result = pd.DataFrame(rows).T.fillna(fill_value)
