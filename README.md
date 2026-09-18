@@ -44,7 +44,8 @@
  `v1.3.x`: you can now choose the relaxer algorithm <br>
  `v1.4.x`: you can choose to not relax structures <br>
  `v2.0.x`: supercells are orthogonalised, treats correlated disorder (under testing)<br>
- `v2.1.x`: works on simple correlated disorder (water ice), site groups, and the P5 rule
+ `v2.1.x`: works on simple correlated disorder (water ice), site groups, and the P5 rule<br>
+ `v2.2.x`: works on site networks (e.g. superionic materials)
 
  ## Debugging and support
  The `virp` code has been tested on a limited number of platforms, so far Windows and Linux. If you are running into any problems during operation, please hound me (Andy Paul Chen) at la.vache.qui.vit(at)gmail.com, and I will try my best to help.
